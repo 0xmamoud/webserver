@@ -17,7 +17,7 @@ RM = rm -rf
 
 # List all source files
 SRC = ${SRC_DIR}/main.cpp \
-      ${CGI_DIR}/test.cpp
+	${CONFIG_DIR}/ConfigParser.cpp \
 
 # Flatten object file paths in obj/ directory
 OBJ = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
