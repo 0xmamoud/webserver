@@ -15,14 +15,12 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 INCLUDES = -I $(HEADER)
 RM = rm -rf
 
-# List all source files
 SRC = ${SRC_DIR}/main.cpp \
 	${CONFIG_DIR}/ConfigParser.cpp \
+	${SERVER_DIR}/Server.cpp \
 
-# Flatten object file paths in obj/ directory
 OBJ = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 
-# Specify vpath for source files
 vpath %.cpp $(SRC_DIR) $(CORE_DIR) $(CGI_DIR) $(CONFIG_DIR) $(HTTP_DIR) $(UTILS_DIR)
 
 all: $(NAME)
@@ -31,7 +29,6 @@ $(NAME): $(OBJ)
 	@$(CC) $(CFLAGS) $(INCLUDES) $(OBJ) -o $(NAME)
 	@echo "\033[32mwebserv compiled\033[0m"
 
-# Compile each source file into the obj/ directory
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(OBJ_DIR)
 	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
