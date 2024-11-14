@@ -17,7 +17,8 @@ RM = rm -rf
 
 SRC = ${SRC_DIR}/main.cpp \
 	${CONFIG_DIR}/ConfigParser.cpp \
-	${SERVER_DIR}/Server.cpp \
+	${CORE_DIR}/Server.cpp \
+	${CORE_DIR}/Epoll.cpp \
 
 OBJ = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 

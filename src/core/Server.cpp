@@ -63,6 +63,80 @@ int Server::createServerSocket(int port)
 
 void Server::run()
 {
-	// TODO implement epoll management
-	std::cout << "Ca marche!" << std::endl;
+	Epoll epoll;
+
+	for (std::vector<int>::iterator it = server_sockets.begin(); it != server_sockets.end(); ++it)
+	{
+		if (epoll.add(*it, EPOLLIN) < 0)
+			throw std::runtime_error("Failed to add server socket to epoll");
+	}
+
+	struct epoll_event events[10];
+	while (true)
+	{
+		int nfds = epoll.wait(events, 10, -1);
+		for (int i = 0; i < nfds; i++)
+		{
+			if (events[i].events & EPOLLIN)
+			{
+				int fd = events[i].data.fd;
+				if (isServerSocket(fd))
+					handleNewConnection(fd, epoll);
+				else
+				{
+					std::cout << "Received data from client" << std::endl;
+					close(fd);
+					// Connection connection(fd);
+					// connection.handleRequest();
+				}
+			}
+		}
+	}
+}
+
+bool Server::isServerSocket(int fd)
+{
+	for (std::vector<int>::iterator it = server_sockets.begin(); it != server_sockets.end(); ++it)
+	{
+		if (*it == fd)
+			return true;
+	}
+	return false;
+}
+
+void Server::handleNewConnection(int server_fd, Epoll &epoll)
+{
+	struct sockaddr_in client_addr;
+	socklen_t client_addr_len = sizeof(client_addr);
+	int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+	if (client_fd < 0)
+	{
+		perror("accept");
+		return;
+	}
+
+	if (makeNonBlocking(client_fd) < 0)
+	{
+		close(client_fd);
+		return;
+	}
+	epoll.add(client_fd, EPOLLIN);
+}
+
+int Server::makeNonBlocking(int fd)
+{
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags < 0)
+	{
+		perror("fcntl");
+		return -1;
+	}
+
+	flags |= O_NONBLOCK | O_CLOEXEC;
+	if (fcntl(fd, F_SETFL, flags) < 0)
+	{
+		perror("fcntl");
+		return -1;
+	}
+	return 1;
 }

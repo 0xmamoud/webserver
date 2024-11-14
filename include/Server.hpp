@@ -9,12 +9,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+
 class Server
 {
 private:
 	Config config;
 	std::vector<int> server_sockets;
 	int createServerSocket(int port);
+	bool isServerSocket(int fd);
+	void handleNewConnection(int server_fd, Epoll &epoll);
+	int makeNonBlocking(int fd);
 
 public:
 	Server(const Config &config);
