@@ -40,6 +40,9 @@ Config ConfigParser::parseConfig()
 
 	file.close();
 
+	normalizeServerConfig(config);
+	normalizeLocationConfig(config);
+
 	return config;
 };
 
@@ -93,8 +96,14 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 		current_location.index = getValue(line);
 	else if (line.find("methods") != std::string::npos)
 		current_location.methods = split(getValue(line), ' ');
-	else if (line.find("cgi_pass") != std::string::npos)
+	else if (line.find("cgi_path") != std::string::npos)
 		current_location.cgi_pass = getValue(line);
+	else if (line.find("autoindex") != std::string::npos)
+	{
+		std::string value = getValue(line);
+		if (value == "on")
+			current_location.autoindex = 1;
+	}
 };
 
 void ConfigParser::handleServerConfig(ServerConfig &current_server, const std::string &line)
@@ -108,7 +117,7 @@ void ConfigParser::handleServerConfig(ServerConfig &current_server, const std::s
 	else if (line.find("root") != std::string::npos)
 		current_server.root = getValue(line);
 	else if (line.find("body_size") != std::string::npos)
-		current_server.client_max_body_size = std::atoi(getValue(line).c_str());
+		current_server.body_size = std::atoi(getValue(line).c_str());
 	else if (line.find("error_page") != std::string::npos)
 	{
 		std::vector<std::string> tokens = split(line, ' ');
@@ -148,4 +157,51 @@ std::vector<std::string> ConfigParser::split(const std::string &str, const char 
 const char *ConfigParser::InvalidConfigException::what() const throw()
 {
 	return "Invalid configuration file";
+};
+
+void ConfigParser::normalizeServerConfig(Config &config)
+{
+	for (std::vector<ServerConfig>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
+	{
+		if (it->server_name.empty())
+			it->server_name = "_";
+		if (it->host.empty())
+			it->host = "localhost";
+		if (it->port == 0)
+			throw std::runtime_error("Port number is required");
+		if (it->body_size == 0)
+			it->body_size = 1000000;
+		if (it->error_pages.empty())
+		{
+			it->error_pages[400] = "error_pages/400.html";
+			it->error_pages[401] = "error_pages/401.html";
+			it->error_pages[403] = "error_pages/403.html";
+			it->error_pages[404] = "error_pages/404.html";
+			it->error_pages[405] = "error_pages/405.html";
+			it->error_pages[500] = "error_pages/500.html";
+			it->error_pages[501] = "error_pages/501.html";
+		}
+	}
+};
+
+void ConfigParser::normalizeLocationConfig(Config &config)
+{
+	for (std::vector<ServerConfig>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
+	{
+		for (std::map<std::string, LocationConfig>::iterator it2 = it->locations.begin(); it2 != it->locations.end(); ++it2)
+		{
+			if (it2->second.root.empty())
+			{
+				if (it->root.empty())
+					throw std::runtime_error("No root path specified");
+				it2->second.root = it->root;
+			}
+			if (it2->second.methods.empty())
+			{
+				it2->second.methods.push_back("GET");
+				it2->second.methods.push_back("POST");
+				it2->second.methods.push_back("DELETE");
+			}
+		}
+	}
 };

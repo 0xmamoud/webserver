@@ -84,10 +84,10 @@ void Server::run()
 					handleNewConnection(fd, epoll);
 				else
 				{
-					std::cout << "Received data from client" << std::endl;
-					close(fd);
 					// Connection connection(fd);
 					// connection.handleRequest();
+					std::cout << "Handling request on fd " << fd << std::endl;
+					close(fd);
 				}
 			}
 		}

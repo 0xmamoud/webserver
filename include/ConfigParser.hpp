@@ -14,6 +14,7 @@ struct LocationConfig
 	std::string path;
 	std::string root;
 	std::string index;
+	int autoindex;
 	std::vector<std::string> methods;
 	std::string cgi_pass;
 };
@@ -24,7 +25,7 @@ struct ServerConfig
 	std::string host;
 	int port;
 	std::string root;
-	int client_max_body_size;
+	int body_size;
 	std::map<int, std::string> error_pages;
 	std::map<std::string, LocationConfig> locations;
 };
@@ -51,6 +52,9 @@ private:
 	void handleNewLocation(ServerConfig &current_server, LocationConfig &current_location, const std::string &line);
 	void handleServerConfig(ServerConfig &current_server, const std::string &line);
 	void handleLocationConfig(LocationConfig &current_location, const std::string &line);
+
+	void normalizeServerConfig(Config &config);
+	void normalizeLocationConfig(Config &config);
 
 public:
 	ConfigParser();
