@@ -91,12 +91,17 @@ void Server::run()
 		{
 			if (events[i].events & EPOLLIN)
 			{
+				std::cout << "coucou2" << std::endl;
 				int fd = events[i].data.fd;
 				if (isServerSocket(fd))
 					handleNewConnection(fd, epoll, connections);
 				else
 				{
-					connections[fd].handleRequest();
+					std::map<int, Connection>::iterator it = connections.find(fd);
+					if (it != connections.end())
+					{
+						it->second.handleRequest();
+					}
 				}
 			}
 		}

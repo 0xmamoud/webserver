@@ -19,6 +19,7 @@ RM = rm -rf
 SRC = ${SRC_DIR}/main.cpp \
 	${CONFIG_DIR}/ConfigParser.cpp \
 	${CORE_DIR}/Server.cpp \
+	${CORE_DIR}/Connection.cpp \
 	${CORE_DIR}/Epoll.cpp \
 	${LOG_DIR}/Logger.cpp \
 

@@ -5,6 +5,8 @@
 #include <map>
 #include "Config.hpp"
 #include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <iostream>
@@ -21,7 +23,6 @@ private:
 	std::string buffer;
 
 public:
-	Connection();
 	Connection(int fd, ServerConfig &server_config);
 	Connection &operator=(const Connection &other);
 	~Connection();

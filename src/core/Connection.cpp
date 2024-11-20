@@ -1,9 +1,5 @@
 #include "../../include/Connection.hpp"
 
-Connection::Connection() : client_fd(-1), server_config(ServerConfig())
-{
-}
-
 Connection::Connection(int fd, ServerConfig &server_config) : client_fd(fd), server_config(server_config), keep_alive(false), last_activity(time(0)), timeout(5) {};
 
 Connection &Connection::operator=(const Connection &other)
