@@ -1,12 +1,13 @@
 #include "../../include/Server.hpp"
 
-Server::Server(const Config &config) : config(config)
+Server::Server(const Config &config)
 {
 	for (std::vector<ServerConfig>::const_iterator it = config.servers.begin(); it != config.servers.end(); ++it)
 	{
 		int socket_fd = createServerSocket(it->port);
 		if (socket_fd != -1)
-			server_sockets.push_back(socket_fd);
+			continue;
+		server_configs[socket_fd] = *it;
 	}
 }
 
@@ -14,18 +15,27 @@ Server::Server(const Server &other) { *this = other; }
 
 Server &Server::operator=(const Server &other)
 {
-	(void)other;
+	if (this != &other)
+	{
+		this->server_configs = other.server_configs;
+	}
 	return *this;
 }
 
 Server::~Server()
 {
-	for (std::vector<int>::iterator it = server_sockets.begin(); it != server_sockets.end(); ++it)
-		close(*it);
+	for (std::map<int, ServerConfig>::iterator it = server_configs.begin(); it != server_configs.end(); ++it)
+	{
+		close(it->first);
+	}
 };
 
 int Server::createServerSocket(int port)
 {
+	std::ostringstream oss;
+
+	oss << port;
+
 	int socket_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (socket_fd == -1)
 	{
@@ -56,7 +66,8 @@ int Server::createServerSocket(int port)
 		perror("listen");
 		return -1;
 	}
-	std::cout << "Server listening on port " << port << std::endl;
+
+	Logger::log(Logger::INFO, "Server listening on port " + oss.str());
 
 	return socket_fd;
 }
@@ -65,13 +76,14 @@ void Server::run()
 {
 	Epoll epoll;
 
-	for (std::vector<int>::iterator it = server_sockets.begin(); it != server_sockets.end(); ++it)
+	for (std::map<int, ServerConfig>::iterator it = server_configs.begin(); it != server_configs.end(); ++it)
 	{
-		if (epoll.add(*it, EPOLLIN) < 0)
+		if (epoll.add(it->first, EPOLLIN) < 0)
 			throw std::runtime_error("Failed to add server socket to epoll");
 	}
 
 	struct epoll_event events[10];
+	std::map<int, Connection> connections;
 	while (true)
 	{
 		int nfds = epoll.wait(events, 10, -1);
@@ -81,13 +93,10 @@ void Server::run()
 			{
 				int fd = events[i].data.fd;
 				if (isServerSocket(fd))
-					handleNewConnection(fd, epoll);
+					handleNewConnection(fd, epoll, connections);
 				else
 				{
-					// Connection connection(fd);
-					// connection.handleRequest();
-					std::cout << "Handling request on fd " << fd << std::endl;
-					close(fd);
+					// connections[fd].handleRequest();
 				}
 			}
 		}
@@ -96,15 +105,15 @@ void Server::run()
 
 bool Server::isServerSocket(int fd)
 {
-	for (std::vector<int>::iterator it = server_sockets.begin(); it != server_sockets.end(); ++it)
+	for (std::map<int, ServerConfig>::iterator it = server_configs.begin(); it != server_configs.end(); ++it)
 	{
-		if (*it == fd)
+		if (it->first == fd)
 			return true;
 	}
 	return false;
 }
 
-void Server::handleNewConnection(int server_fd, Epoll &epoll)
+void Server::handleNewConnection(int server_fd, Epoll &epoll, std::map<int, Connection> &connections)
 {
 	struct sockaddr_in client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
@@ -121,6 +130,9 @@ void Server::handleNewConnection(int server_fd, Epoll &epoll)
 		return;
 	}
 	epoll.add(client_fd, EPOLLIN);
+
+	const ServerConfig &server_config = server_configs[server_fd];
+	connections[client_fd] = Connection(client_fd, server_config);
 }
 
 int Server::makeNonBlocking(int fd)

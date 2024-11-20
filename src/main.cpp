@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../include/ConfigParser.hpp"
 #include "../include/Server.hpp"
+#include "../include/Logger.hpp"
 
 int main()
 {
@@ -14,7 +15,8 @@ int main()
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << e.what() << '\n';
+		Logger::log(Logger::ERROR, e.what());
+		return 1;
 	}
 
 	return 0;

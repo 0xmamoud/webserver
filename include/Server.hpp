@@ -5,21 +5,24 @@
 #include "Connection.hpp"
 #include "ConfigParser.hpp"
 #include <vector>
+#include <map>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include "Logger.hpp"
+#include <sstream>
 
 class Server
 {
 private:
-	Config config;
-	std::vector<int> server_sockets;
+	std::map<int, ServerConfig> server_configs;
+
 	int createServerSocket(int port);
 	bool isServerSocket(int fd);
-	void handleNewConnection(int server_fd, Epoll &epoll);
+	void handleNewConnection(int server_fd, Epoll &epoll, std::map<int, Connection> &connections);
 	int makeNonBlocking(int fd);
 
 public:

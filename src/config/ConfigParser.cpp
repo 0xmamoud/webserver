@@ -16,6 +16,9 @@ ConfigParser::~ConfigParser() {}
 
 Config ConfigParser::parseConfig()
 {
+
+	Logger::log(Logger::INFO, "Setting up configuration file...");
+
 	std::ifstream file(this->filepath.c_str());
 	if (!file.is_open())
 		throw InvalidConfigException();
@@ -40,8 +43,13 @@ Config ConfigParser::parseConfig()
 
 	file.close();
 
+	Logger::log(Logger::INFO, "Configuration file loaded successfully");
+	Logger::log(Logger::INFO, "Normalizing servers configuration...");
+
 	normalizeServerConfig(config);
 	normalizeLocationConfig(config);
+
+	Logger::log(Logger::INFO, "Configuration normalized successfully");
 
 	return config;
 };

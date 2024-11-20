@@ -4,36 +4,11 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
-#include <map>
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
-struct LocationConfig
-{
-	std::string path;
-	std::string root;
-	std::string index;
-	int autoindex;
-	std::vector<std::string> methods;
-	std::string cgi_pass;
-};
-
-struct ServerConfig
-{
-	std::string server_name;
-	std::string host;
-	int port;
-	std::string root;
-	int body_size;
-	std::map<int, std::string> error_pages;
-	std::map<std::string, LocationConfig> locations;
-};
-
-struct Config
-{
-	std::vector<ServerConfig> servers;
-};
+#include "Config.hpp"
+#include "Logger.hpp"
 
 class ConfigParser
 {
