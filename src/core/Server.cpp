@@ -96,10 +96,11 @@ void Server::run()
 					handleNewConnection(fd, epoll, connections);
 				else
 				{
-					// connections[fd].handleRequest();
+					connections[fd].handleRequest();
 				}
 			}
 		}
+		closeConnection(connections);
 	}
 }
 
@@ -131,8 +132,9 @@ void Server::handleNewConnection(int server_fd, Epoll &epoll, std::map<int, Conn
 	}
 	epoll.add(client_fd, EPOLLIN);
 
-	const ServerConfig &server_config = server_configs[server_fd];
-	connections[client_fd] = Connection(client_fd, server_config);
+	ServerConfig &server_config = server_configs[server_fd];
+	connections.insert(std::make_pair(client_fd, Connection(client_fd, server_config)));
+	Logger::log(Logger::INFO, "New connection accepted");
 }
 
 int Server::makeNonBlocking(int fd)
@@ -151,4 +153,19 @@ int Server::makeNonBlocking(int fd)
 		return -1;
 	}
 	return 1;
+}
+
+void Server::closeConnection(std::map<int, Connection> &connections)
+{
+	for (std::map<int, Connection>::iterator it = connections.begin(); it != connections.end();)
+	{
+		std::cout << "timeout modif" << it->second.getTimeout() << std::endl;
+		std::cout << "body size modif" << it->second.getBodySize() << std::endl;
+		if (it->second.isTimedOut())
+		{
+			connections.erase(it++);
+		}
+		else
+			++it;
+	}
 }

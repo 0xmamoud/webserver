@@ -14,6 +14,7 @@
 #include <errno.h>
 #include "Logger.hpp"
 #include <sstream>
+#include <utility>
 
 class Server
 {
@@ -24,6 +25,7 @@ private:
 	bool isServerSocket(int fd);
 	void handleNewConnection(int server_fd, Epoll &epoll, std::map<int, Connection> &connections);
 	int makeNonBlocking(int fd);
+	void closeConnection(std::map<int, Connection> &connections);
 
 public:
 	Server(const Config &config);
