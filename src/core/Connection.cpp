@@ -30,9 +30,35 @@ void Connection::handleRequest()
 	if (bytes_read < 0)
 	{
 		perror("recv");
+		Logger::log(Logger::ERROR, "Failed to read from socket");
 		return;
 	}
-	buffer.append(buf, bytes_read);
+	else if (bytes_read == 0)
+	{
+		Logger::log(Logger::INFO, "Connection closed by client");
+		close(this->client_fd);
+		this->client_fd = -1;
+		return;
+	}
+
+	this->buffer.append(buf, bytes_read);
+	try
+	{
+		this->manageClientActivity();
+
+		HttpRequest request(this->buffer, server_config);
+		request.parse();
+
+		HttpResponse response(request);
+		response.generateResponse();
+	}
+	catch (const std::exception &e)
+	{
+		Logger::log(Logger::ERROR, e.what());
+		close(this->client_fd);
+		this->client_fd = -1;
+		return;
+	}
 
 	Logger::log(Logger::DEBUG, buf);
 };

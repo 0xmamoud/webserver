@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <iostream>
 #include "Logger.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
 class Connection
 {
@@ -23,6 +25,7 @@ private:
 	std::string buffer;
 
 	bool isRequestComplete();
+	void manageClientActivity();
 
 public:
 	Connection(int fd, ServerConfig &server_config);
