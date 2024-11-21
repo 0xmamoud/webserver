@@ -34,11 +34,11 @@ Config ConfigParser::parseConfig()
 		if (line.empty() || line[0] == '#')
 			continue;
 		if (line == "server {")
-			handleNewServer(config, current_server);
+			this->handleNewServer(config, current_server);
 		else if (line == "}")
-			handleClosingBracket(config, current_server, current_location);
+			this->handleClosingBracket(config, current_server, current_location);
 		else if (this->inside_server_block)
-			handleBlocks(current_server, current_location, line);
+			this->handleBlocks(current_server, current_location, line);
 	}
 
 	file.close();
@@ -46,8 +46,8 @@ Config ConfigParser::parseConfig()
 	Logger::log(Logger::INFO, "Configuration file loaded successfully");
 	Logger::log(Logger::INFO, "Normalizing servers configuration...");
 
-	normalizeServerConfig(config);
-	normalizeLocationConfig(config);
+	this->normalizeServerConfig(config);
+	this->normalizeLocationConfig(config);
 
 	Logger::log(Logger::INFO, "Configuration normalized successfully");
 
@@ -79,11 +79,11 @@ void ConfigParser::handleClosingBracket(Config &config, ServerConfig &current_se
 void ConfigParser::handleBlocks(ServerConfig &current_server, LocationConfig &current_location, const std::string &line)
 {
 	if (line.find("location") != std::string::npos)
-		handleNewLocation(current_server, current_location, line);
+		this->handleNewLocation(current_server, current_location, line);
 	else if (this->inside_location_block)
-		handleLocationConfig(current_location, line);
+		this->handleLocationConfig(current_location, line);
 	else
-		handleServerConfig(current_server, line);
+		this->handleServerConfig(current_server, line);
 };
 
 void ConfigParser::handleNewLocation(ServerConfig &current_server, LocationConfig &current_location, const std::string &line)
@@ -91,7 +91,7 @@ void ConfigParser::handleNewLocation(ServerConfig &current_server, LocationConfi
 	if (this->inside_location_block)
 		current_server.locations[current_location.path] = current_location;
 	current_location = LocationConfig();
-	std::vector<std::string> tokens = split(line, ' ');
+	std::vector<std::string> tokens = this->split(line, ' ');
 	current_location.path = tokens[1];
 	this->inside_location_block = true;
 };
@@ -99,16 +99,16 @@ void ConfigParser::handleNewLocation(ServerConfig &current_server, LocationConfi
 void ConfigParser::handleLocationConfig(LocationConfig &current_location, const std::string &line)
 {
 	if (line.find("root") != std::string::npos)
-		current_location.root = getValue(line);
+		current_location.root = this->getValue(line);
 	else if (line.find("index") != std::string::npos)
-		current_location.index = getValue(line);
+		current_location.index = this->getValue(line);
 	else if (line.find("methods") != std::string::npos)
-		current_location.methods = split(getValue(line), ' ');
+		current_location.methods = this->split(getValue(line), ' ');
 	else if (line.find("cgi_path") != std::string::npos)
-		current_location.cgi_pass = getValue(line);
+		current_location.cgi_pass = this->getValue(line);
 	else if (line.find("autoindex") != std::string::npos)
 	{
-		std::string value = getValue(line);
+		std::string value = this->getValue(line);
 		if (value == "on")
 			current_location.autoindex = 1;
 	}
@@ -117,18 +117,18 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 void ConfigParser::handleServerConfig(ServerConfig &current_server, const std::string &line)
 {
 	if (line.find("server_name") != std::string::npos)
-		current_server.server_name = getValue(line);
+		current_server.server_name = this->getValue(line);
 	else if (line.find("host") != std::string::npos)
-		current_server.host = getValue(line);
+		current_server.host = this->getValue(line);
 	else if (line.find("port") != std::string::npos)
-		current_server.port = std::atoi(getValue(line).c_str());
+		current_server.port = std::atoi(this->getValue(line).c_str());
 	else if (line.find("root") != std::string::npos)
-		current_server.root = getValue(line);
+		current_server.root = this->getValue(line);
 	else if (line.find("body_size") != std::string::npos)
-		current_server.body_size = std::atoi(getValue(line).c_str());
+		current_server.body_size = std::atoi(this->getValue(line).c_str());
 	else if (line.find("error_page") != std::string::npos)
 	{
-		std::vector<std::string> tokens = split(line, ' ');
+		std::vector<std::string> tokens = this->split(line, ' ');
 		current_server.error_pages[std::atoi(tokens[1].c_str())] = tokens[2];
 	}
 };

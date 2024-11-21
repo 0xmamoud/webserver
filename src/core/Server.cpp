@@ -4,10 +4,10 @@ Server::Server(const Config &config)
 {
 	for (std::vector<ServerConfig>::const_iterator it = config.servers.begin(); it != config.servers.end(); ++it)
 	{
-		int socket_fd = createServerSocket(it->port);
+		int socket_fd = this->createServerSocket(it->port);
 		if (socket_fd < 0)
 			continue;
-		server_configs[socket_fd] = *it;
+		this->server_configs[socket_fd] = *it;
 	}
 }
 
@@ -24,7 +24,7 @@ Server &Server::operator=(const Server &other)
 
 Server::~Server()
 {
-	for (std::map<int, ServerConfig>::iterator it = server_configs.begin(); it != server_configs.end(); ++it)
+	for (std::map<int, ServerConfig>::iterator it = this->server_configs.begin(); it != this->server_configs.end(); ++it)
 	{
 		close(it->first);
 	}
@@ -76,7 +76,7 @@ void Server::run()
 {
 	Epoll epoll;
 
-	for (std::map<int, ServerConfig>::iterator it = server_configs.begin(); it != server_configs.end(); ++it)
+	for (std::map<int, ServerConfig>::iterator it = this->server_configs.begin(); it != this->server_configs.end(); ++it)
 	{
 		if (epoll.add(it->first, EPOLLIN) < 0)
 			throw std::runtime_error("Failed to add server socket to epoll");
@@ -91,11 +91,11 @@ void Server::run()
 			if (events[i].events & EPOLLIN)
 			{
 				int fd = events[i].data.fd;
-				if (isServerSocket(fd))
-					handleNewConnection(fd, epoll);
+				if (this->isServerSocket(fd))
+					this->handleNewConnection(fd, epoll);
 				else
 				{
-					std::map<int, Connection *>::iterator it = connections.find(fd);
+					std::map<int, Connection *>::iterator it = this->connections.find(fd);
 					if (it != connections.end())
 					{
 						it->second->handleRequest();
@@ -103,13 +103,13 @@ void Server::run()
 				}
 			}
 		}
-		closeConnection();
+		this->closeConnection();
 	}
 }
 
 bool Server::isServerSocket(int fd)
 {
-	for (std::map<int, ServerConfig>::iterator it = server_configs.begin(); it != server_configs.end(); ++it)
+	for (std::map<int, ServerConfig>::iterator it = this->server_configs.begin(); it != this->server_configs.end(); ++it)
 	{
 		if (it->first == fd)
 			return true;
@@ -129,7 +129,7 @@ void Server::handleNewConnection(int server_fd, Epoll &epoll)
 		return;
 	}
 
-	if (makeNonBlocking(client_fd) < 0)
+	if (this->makeNonBlocking(client_fd) < 0)
 	{
 		close(client_fd);
 		Logger::log(Logger::ERROR, "Failed to make client socket non-blocking");
@@ -143,8 +143,8 @@ void Server::handleNewConnection(int server_fd, Epoll &epoll)
 		return;
 	}
 
-	ServerConfig &server_config = server_configs[server_fd];
-	connections[client_fd] = new Connection(client_fd, server_config);
+	ServerConfig &server_config = this->server_configs[server_fd];
+	this->connections[client_fd] = new Connection(client_fd, server_config);
 	Logger::log(Logger::INFO, "New connection accepted");
 }
 
@@ -168,12 +168,12 @@ int Server::makeNonBlocking(int fd)
 
 void Server::closeConnection()
 {
-	for (std::map<int, Connection *>::iterator it = connections.begin(); it != connections.end();)
+	for (std::map<int, Connection *>::iterator it = this->connections.begin(); it != this->connections.end();)
 	{
 		if (it->second->isTimedOut())
 		{
 			delete it->second;
-			connections.erase(it++);
+			this->connections.erase(it++);
 		}
 		else
 			++it;

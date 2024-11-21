@@ -22,6 +22,8 @@ private:
 	int timeout;
 	std::string buffer;
 
+	bool isRequestComplete();
+
 public:
 	Connection(int fd, ServerConfig &server_config);
 	Connection &operator=(const Connection &other);

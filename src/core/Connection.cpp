@@ -32,8 +32,14 @@ void Connection::handleRequest()
 		perror("recv");
 		return;
 	}
+	buffer.append(buf, bytes_read);
 
 	Logger::log(Logger::DEBUG, buf);
+};
+
+bool Connection::isRequestComplete()
+{
+	return buffer.find("\r\n\r\n") != std::string::npos;
 };
 
 bool Connection::isTimedOut()

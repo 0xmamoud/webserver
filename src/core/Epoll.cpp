@@ -2,7 +2,7 @@
 
 Epoll::Epoll()
 {
-	epoll_fd = epoll_create1(0);
+	this->epoll_fd = epoll_create1(0);
 	if (epoll_fd == -1)
 	{
 		perror("epoll_create1");
@@ -17,13 +17,13 @@ Epoll::Epoll(const Epoll &other)
 
 Epoll &Epoll::operator=(const Epoll &other)
 {
-	epoll_fd = other.epoll_fd;
+	this->epoll_fd = other.epoll_fd;
 	return *this;
 }
 
 Epoll::~Epoll()
 {
-	close(epoll_fd);
+	close(this->epoll_fd);
 }
 
 int Epoll::add(int fd, uint32_t events)
@@ -32,7 +32,7 @@ int Epoll::add(int fd, uint32_t events)
 	event.events = events;
 	event.data.fd = fd;
 
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) < 0)
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		perror("epoll_ctl");
 		return -1;
@@ -42,7 +42,7 @@ int Epoll::add(int fd, uint32_t events)
 
 int Epoll::wait(struct epoll_event *events, int maxevents, int timeout)
 {
-	int nfds = epoll_wait(epoll_fd, events, maxevents, timeout);
+	int nfds = epoll_wait(this->epoll_fd, events, maxevents, timeout);
 	if (nfds < 0)
 	{
 		perror("epoll_wait");
