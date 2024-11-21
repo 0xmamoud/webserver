@@ -33,9 +33,6 @@ void Connection::handleRequest()
 		return;
 	}
 
-	timeout = 2;
-	server_config.body_size = 1500;
-
 	Logger::log(Logger::DEBUG, buf);
 };
 

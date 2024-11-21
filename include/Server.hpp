@@ -20,12 +20,13 @@ class Server
 {
 private:
 	std::map<int, ServerConfig> server_configs;
+	std::map<int, Connection *> connections;
 
 	int createServerSocket(int port);
 	bool isServerSocket(int fd);
-	void handleNewConnection(int server_fd, Epoll &epoll, std::map<int, Connection> &connections);
+	void handleNewConnection(int server_fd, Epoll &epoll);
 	int makeNonBlocking(int fd);
-	void closeConnection(std::map<int, Connection> &connections);
+	void closeConnection();
 
 public:
 	Server(const Config &config);

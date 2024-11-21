@@ -16,6 +16,7 @@ class Connection
 {
 private:
 	int client_fd;
+	ServerConfig &server_config;
 	bool keep_alive;
 	time_t last_activity;
 	int timeout;
@@ -26,7 +27,6 @@ public:
 	Connection &operator=(const Connection &other);
 	~Connection();
 
-	ServerConfig &server_config;
 	void handleRequest();
 	bool isTimedOut();
 	int getTimeout();

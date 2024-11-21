@@ -37,7 +37,7 @@ int Server::createServerSocket(int port)
 	oss << port;
 
 	int socket_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-	if (socket_fd == -1)
+	if (socket_fd < 0)
 	{
 		perror("socket");
 		return -1;
@@ -83,7 +83,6 @@ void Server::run()
 	}
 
 	struct epoll_event events[10];
-	std::map<int, Connection> connections;
 	while (true)
 	{
 		int nfds = epoll.wait(events, 10, -1);
@@ -93,18 +92,18 @@ void Server::run()
 			{
 				int fd = events[i].data.fd;
 				if (isServerSocket(fd))
-					handleNewConnection(fd, epoll, connections);
+					handleNewConnection(fd, epoll);
 				else
 				{
-					std::map<int, Connection>::iterator it = connections.find(fd);
+					std::map<int, Connection *>::iterator it = connections.find(fd);
 					if (it != connections.end())
 					{
-						it->second.handleRequest();
+						it->second->handleRequest();
 					}
 				}
 			}
 		}
-		closeConnection(connections);
+		closeConnection();
 	}
 }
 
@@ -118,13 +117,14 @@ bool Server::isServerSocket(int fd)
 	return false;
 }
 
-void Server::handleNewConnection(int server_fd, Epoll &epoll, std::map<int, Connection> &connections)
+void Server::handleNewConnection(int server_fd, Epoll &epoll)
 {
 	struct sockaddr_in client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
 	int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
 	if (client_fd < 0)
 	{
+		Logger::log(Logger::ERROR, "Failed to accept new connection");
 		perror("accept");
 		return;
 	}
@@ -132,12 +132,19 @@ void Server::handleNewConnection(int server_fd, Epoll &epoll, std::map<int, Conn
 	if (makeNonBlocking(client_fd) < 0)
 	{
 		close(client_fd);
+		Logger::log(Logger::ERROR, "Failed to make client socket non-blocking");
 		return;
 	}
-	epoll.add(client_fd, EPOLLIN);
+
+	if (epoll.add(client_fd, EPOLLIN) < 0)
+	{
+		close(client_fd);
+		Logger::log(Logger::ERROR, "Failed to add client socket to epoll");
+		return;
+	}
 
 	ServerConfig &server_config = server_configs[server_fd];
-	connections.insert(std::make_pair(client_fd, Connection(client_fd, server_config)));
+	connections[client_fd] = new Connection(client_fd, server_config);
 	Logger::log(Logger::INFO, "New connection accepted");
 }
 
@@ -159,14 +166,13 @@ int Server::makeNonBlocking(int fd)
 	return 1;
 }
 
-void Server::closeConnection(std::map<int, Connection> &connections)
+void Server::closeConnection()
 {
-	for (std::map<int, Connection>::iterator it = connections.begin(); it != connections.end();)
+	for (std::map<int, Connection *>::iterator it = connections.begin(); it != connections.end();)
 	{
-		std::cout << "timeout modif" << it->second.getTimeout() << std::endl;
-		std::cout << "body size modif" << it->second.getBodySize() << std::endl;
-		if (it->second.isTimedOut())
+		if (it->second->isTimedOut())
 		{
+			delete it->second;
 			connections.erase(it++);
 		}
 		else
