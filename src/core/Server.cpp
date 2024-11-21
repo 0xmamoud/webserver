@@ -5,7 +5,7 @@ Server::Server(const Config &config)
 	for (std::vector<ServerConfig>::const_iterator it = config.servers.begin(); it != config.servers.end(); ++it)
 	{
 		int socket_fd = createServerSocket(it->port);
-		if (socket_fd != -1)
+		if (socket_fd < 0)
 			continue;
 		server_configs[socket_fd] = *it;
 	}
@@ -91,7 +91,6 @@ void Server::run()
 		{
 			if (events[i].events & EPOLLIN)
 			{
-				std::cout << "coucou2" << std::endl;
 				int fd = events[i].data.fd;
 				if (isServerSocket(fd))
 					handleNewConnection(fd, epoll, connections);
