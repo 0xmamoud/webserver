@@ -25,6 +25,7 @@ Connection::~Connection()
 void Connection::handleRequest()
 {
 	char buf[server_config.body_size];
+	memset(buf, 0, server_config.body_size);
 	int bytes_read = recv(client_fd, buf, server_config.body_size, 0);
 
 	if (bytes_read < 0)
@@ -42,15 +43,13 @@ void Connection::handleRequest()
 	}
 
 	this->buffer.append(buf, bytes_read);
+	this->manageClientActivity();
+
 	try
 	{
-		this->manageClientActivity();
-
 		HttpRequest request(this->buffer, server_config);
-		request.parse();
-
 		HttpResponse response(request);
-		response.generateResponse();
+		response.sendResponse(client_fd);
 	}
 	catch (const std::exception &e)
 	{
@@ -59,8 +58,6 @@ void Connection::handleRequest()
 		this->client_fd = -1;
 		return;
 	}
-
-	Logger::log(Logger::DEBUG, buf);
 };
 
 bool Connection::isRequestComplete()
@@ -71,6 +68,20 @@ bool Connection::isRequestComplete()
 bool Connection::isTimedOut()
 {
 	return time(0) - last_activity > timeout;
+};
+
+void Connection::manageClientActivity()
+{
+	this->last_activity = time(0);
+	std::string header = this->buffer.substr(0, buffer.find("\r\n\r\n"));
+	if (header.empty())
+		return;
+	if (header.find("Connection: keep-alive") != std::string::npos)
+	{
+		this->keep_alive = true;
+		return;
+	}
+	this->keep_alive = false;
 };
 
 int Connection::getTimeout()

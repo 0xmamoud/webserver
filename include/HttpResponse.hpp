@@ -17,10 +17,12 @@ private:
 	std::string keep_alive;
 	std::string body;
 
+	void generateResponse();
+
 public:
 	HttpResponse(const HttpRequest &request);
 	~HttpResponse();
 
-	void generateResponse();
+	void sendResponse(int client_fd);
 };
 #endif

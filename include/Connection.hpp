@@ -2,6 +2,7 @@
 #define CONNECTION_HPP
 
 #include <string>
+#include <string.h>
 #include <map>
 #include "Config.hpp"
 #include <unistd.h>

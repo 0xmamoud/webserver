@@ -7,22 +7,23 @@
 class HttpRequest
 {
 private:
-	std::string request;
+	const std::string request;
+	const ServerConfig server_config;
 	std::string method;
 	std::string uri;
+	std::string queryString;
 	std::string http_version;
 	std::string host;
 	std::string mime_type;
 	std::string body;
 	std::string connection;
 	std::string content_length;
-	ServerConfig server_config;
-
-public:
-	HttpRequest(std::string request, ServerConfig server_config);
-	~HttpRequest();
 
 	void parse();
+
+public:
+	HttpRequest(const std::string &request, const ServerConfig &server_config);
+	~HttpRequest();
 
 	std::string getMethod() const;
 	std::string getUri() const;
@@ -32,6 +33,7 @@ public:
 	std::string getBody() const;
 	std::string getConnection() const;
 	std::string getContentLength() const;
+	std::string getQueryString() const;
 };
 
 #endif
