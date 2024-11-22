@@ -24,6 +24,7 @@ SRC = ${SRC_DIR}/main.cpp \
 	${LOG_DIR}/Logger.cpp \
 	${HTTP_DIR}/HttpRequest.cpp \
 	${HTTP_DIR}/HttpResponse.cpp \
+	${UTILS_DIR}/Utility.cpp \
 
 OBJ = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 

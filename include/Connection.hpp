@@ -27,6 +27,7 @@ private:
 
 	bool isRequestComplete();
 	void manageClientActivity();
+	void closeConnection();
 
 public:
 	Connection(int fd, ServerConfig &server_config);
