@@ -23,6 +23,8 @@ Config ConfigParser::parseConfig()
 	if (!file.is_open())
 		throw InvalidConfigException();
 
+	Logger::log(Logger::INFO, "Configuration file loaded successfully");
+
 	Config config;
 	std::string line;
 	ServerConfig current_server;
@@ -40,12 +42,13 @@ Config ConfigParser::parseConfig()
 		else if (this->inside_server_block)
 			this->handleBlocks(current_server, current_location, line);
 	}
-
 	file.close();
 
-	Logger::log(Logger::INFO, "Configuration file loaded successfully");
-	Logger::log(Logger::INFO, "Normalizing servers configuration...");
+	Logger::log(Logger::INFO, "Handling redirections...");
+	this->handleRedirection(config);
+	Logger::log(Logger::INFO, "Redirections handled successfully");
 
+	Logger::log(Logger::INFO, "Normalizing servers configuration...");
 	this->normalizeServerConfig(config);
 	this->normalizeLocationConfig(config);
 
@@ -112,6 +115,14 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 		if (value == "on")
 			current_location.autoindex = 1;
 	}
+	else if (line.find("upload_path") != std::string::npos)
+	{
+		current_location.upload_path = this->getValue(line);
+	}
+	else if (line.find("redirect") != std::string::npos)
+	{
+		current_location.redirect = this->getValue(line);
+	}
 };
 
 void ConfigParser::handleServerConfig(ServerConfig &current_server, const std::string &line)
@@ -133,46 +144,12 @@ void ConfigParser::handleServerConfig(ServerConfig &current_server, const std::s
 	}
 };
 
-std::string ConfigParser::trim(const std::string &str)
-{
-	std::string trimmed = str;
-	trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r\f\v"));
-	trimmed.erase(trimmed.find_last_not_of(" \t\n\r\f\v") + 1);
-
-	if (!trimmed.empty() && trimmed[trimmed.size() - 1] == ';')
-		trimmed.erase(trimmed.size() - 1);
-	return trimmed;
-};
-
-std::string ConfigParser::getValue(const std::string &line)
-{
-	std::string value = line.substr(line.find_first_of(" \t") + 1);
-	return this->trim(value);
-};
-
-std::vector<std::string> ConfigParser::split(const std::string &str, const char delim)
-{
-	std::vector<std::string> tokens;
-	std::stringstream ss(str);
-	std::string item;
-	while (std::getline(ss, item, delim))
-	{
-		tokens.push_back(this->trim(item));
-	}
-	return tokens;
-};
-
-const char *ConfigParser::InvalidConfigException::what() const throw()
-{
-	return "Invalid configuration file";
-};
-
 void ConfigParser::normalizeServerConfig(Config &config)
 {
 	for (std::vector<ServerConfig>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
 	{
 		if (it->server_name.empty())
-			it->server_name = "_";
+			it->server_name = "localhost:4000";
 		if (it->host.empty())
 			it->host = "localhost";
 		if (it->port == 0)
@@ -210,6 +187,69 @@ void ConfigParser::normalizeLocationConfig(Config &config)
 				it2->second.methods.push_back("POST");
 				it2->second.methods.push_back("DELETE");
 			}
+			if (it2->second.upload_path.empty())
+				it2->second.upload_path = it2->second.root;
 		}
 	}
+}
+
+void ConfigParser::handleRedirection(Config &config)
+{
+	for (std::vector<ServerConfig>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
+	{
+		for (std::map<std::string, LocationConfig>::iterator it2 = it->locations.begin(); it2 != it->locations.end(); ++it2)
+		{
+			if (!it2->second.redirect.empty())
+			{
+				Logger::log(Logger::DEBUG, "redirection: " + it2->second.redirect);
+				ServerConfig redirection = this->findServerConfig(it2->second.redirect, config);
+				it2->second.servers[it2->second.redirect] = redirection;
+			}
+		}
+	};
 };
+
+ServerConfig ConfigParser::findServerConfig(const std::string &server_name, const Config &config)
+{
+	for (std::vector<ServerConfig>::const_iterator it = config.servers.begin(); it != config.servers.end(); ++it)
+	{
+		if (it->server_name == server_name)
+			return *it;
+	}
+	throw std::runtime_error("No Redirection found, please check your configuration file");
+};
+
+std::string ConfigParser::trim(const std::string &str)
+{
+	std::string trimmed = str;
+	trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r\f\v"));
+	trimmed.erase(trimmed.find_last_not_of(" \t\n\r\f\v") + 1);
+
+	if (!trimmed.empty() && trimmed[trimmed.size() - 1] == ';')
+		trimmed.erase(trimmed.size() - 1);
+	return trimmed;
+};
+
+std::string ConfigParser::getValue(const std::string &line)
+{
+	std::string value = line.substr(line.find_first_of(" \t") + 1);
+	return this->trim(value);
+};
+
+std::vector<std::string> ConfigParser::split(const std::string &str, const char delim)
+{
+	std::vector<std::string> tokens;
+	std::stringstream ss(str);
+	std::string item;
+	while (std::getline(ss, item, delim))
+	{
+		tokens.push_back(this->trim(item));
+	}
+	return tokens;
+};
+
+const char *ConfigParser::InvalidConfigException::what() const throw()
+{
+	return "Invalid configuration file";
+};
+;

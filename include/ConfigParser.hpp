@@ -27,9 +27,12 @@ private:
 	void handleNewLocation(ServerConfig &current_server, LocationConfig &current_location, const std::string &line);
 	void handleServerConfig(ServerConfig &current_server, const std::string &line);
 	void handleLocationConfig(LocationConfig &current_location, const std::string &line);
+	void handleRedirection(Config &config);
 
 	void normalizeServerConfig(Config &config);
 	void normalizeLocationConfig(Config &config);
+
+	ServerConfig findServerConfig(const std::string &server_name, const Config &config);
 
 public:
 	ConfigParser();

@@ -48,7 +48,9 @@ void Connection::handleRequest()
 	try
 	{
 		HttpRequest request(this->buffer);
-		// HttpResponse response(request);
+		ServerConfig server_config = this->getServerConfig(request.getUri());
+		Logger::log(Logger::DEBUG, "redirect: " + server_config.server_name);
+		// HttpResponse response(request, this->server_config);
 		// response.sendResponse(client_fd);
 	}
 	catch (const std::exception &e)
@@ -82,6 +84,17 @@ void Connection::manageClientActivity()
 		return;
 	}
 	this->keep_alive = false;
+};
+
+ServerConfig Connection::getServerConfig(const std::string &path)
+{
+
+	std::map<std::string, LocationConfig>::iterator it = this->server_config.locations.find(path);
+	if (it == this->server_config.locations.end())
+		return this->server_config;
+	if (it->second.redirect.empty())
+		return this->server_config;
+	return it->second.servers[it->second.redirect];
 };
 
 void Connection::closeConnection()

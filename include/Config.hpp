@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 
+struct ServerConfig;
+
 struct LocationConfig
 {
 	std::string path;
@@ -13,6 +15,9 @@ struct LocationConfig
 	int autoindex;
 	std::vector<std::string> methods;
 	std::string cgi_pass;
+	std::string upload_path;
+	std::string redirect;
+	std::map<std::string, ServerConfig> servers;
 };
 
 struct ServerConfig
