@@ -47,18 +47,9 @@ void Connection::handleRequest()
 
 	try
 	{
-		HttpRequest request(this->buffer, server_config);
+		HttpRequest request(this->buffer);
 		// HttpResponse response(request);
 		// response.sendResponse(client_fd);
-
-		Logger::log(Logger::DEBUG, "Method: " + request.getMethod());
-		Logger::log(Logger::DEBUG, "URI: " + request.getUri());
-		Logger::log(Logger::DEBUG, "Query String: " + request.getQueryString());
-		Logger::log(Logger::DEBUG, "HTTP Version: " + request.getHttpVersion());
-		Logger::log(Logger::DEBUG, "Host: " + request.getHost());
-		Logger::log(Logger::DEBUG, "Connection: " + request.getConnection());
-		Logger::log(Logger::DEBUG, "Content-Type: " + request.getContentType());
-		Logger::log(Logger::DEBUG, "Body: " + request.getBody());
 	}
 	catch (const std::exception &e)
 	{

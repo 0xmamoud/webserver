@@ -9,7 +9,6 @@ class HttpRequest
 {
 private:
 	const std::string request;
-	const ServerConfig server_config;
 	std::string method;
 	std::string uri;
 	std::string queryString;
@@ -28,7 +27,7 @@ private:
 	void parseBody();
 
 public:
-	HttpRequest(const std::string &request, const ServerConfig &server_config);
+	HttpRequest(const std::string &request);
 	~HttpRequest();
 
 	std::string getMethod() const;
