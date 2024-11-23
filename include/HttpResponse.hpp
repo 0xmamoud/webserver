@@ -23,6 +23,17 @@ private:
 
 	void generateResponse();
 
+	void GET();
+	void POST();
+	void DELETE();
+
+	void generate200();
+	void generate403();
+	void generate404();
+	void generate405();
+	void generate413();
+	void generate500();
+
 public:
 	HttpResponse(const HttpRequest &request, const ServerConfig &server_config);
 	~HttpResponse();

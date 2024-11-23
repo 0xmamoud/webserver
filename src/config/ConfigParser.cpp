@@ -108,7 +108,9 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 	else if (line.find("methods") != std::string::npos)
 		current_location.methods = this->split(getValue(line), ' ');
 	else if (line.find("cgi_path") != std::string::npos)
-		current_location.cgi_pass = this->getValue(line);
+		current_location.cgi_path = this->getValue(line);
+	else if (line.find("cgi_extension") != std::string::npos)
+		current_location.cgi_extension = this->getValue(line);
 	else if (line.find("autoindex") != std::string::npos)
 	{
 		std::string value = this->getValue(line);
@@ -189,6 +191,10 @@ void ConfigParser::normalizeLocationConfig(Config &config)
 			}
 			if (it2->second.upload_path.empty())
 				it2->second.upload_path = it2->second.root;
+			if (!it2->second.cgi_path.empty() && it2->second.cgi_extension.empty())
+				throw std::runtime_error("CGI extension is required");
+			if (!it2->second.cgi_extension.empty() && it2->second.cgi_path.empty())
+				throw std::runtime_error("CGI path is required");
 		}
 	}
 }

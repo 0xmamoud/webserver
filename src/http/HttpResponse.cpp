@@ -9,5 +9,5 @@ HttpResponse::~HttpResponse() {};
 
 void HttpResponse::generateResponse()
 {
-	this->http_version = "HTTP/1.1";
+	
 };
