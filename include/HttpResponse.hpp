@@ -4,8 +4,13 @@
 #include <string>
 #include "HttpRequest.hpp"
 #include "Config.hpp"
+#include "Logger.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 class HttpResponse
 {
@@ -20,12 +25,14 @@ private:
 	std::string date;
 	std::string keep_alive;
 	std::string body;
+	std::string path;
 
 	void generateResponse();
 
-	void GET();
-	void POST();
-	void DELETE();
+	void handleGET();
+	void handlePOST();
+	void handleDELETE();
+	void handleCGI();
 
 	void generate200();
 	void generate403();
@@ -33,6 +40,21 @@ private:
 	void generate405();
 	void generate413();
 	void generate500();
+
+	bool isCGI();
+	bool isMethodAllowed(const LocationConfig &location);
+	bool isDirectory(const std::string &path);
+	bool isFile(const std::string &path);
+	bool parsePath();
+	bool pathAutorization(const std::string &path);
+	bool isFileExists(const std::string &path);
+	bool isDirectoryExists(const std::string &path);
+	bool isFileReadable(const std::string &path);
+
+	std::vector<std::string> readDirectory(const std::string &path);
+
+	std::string getContentType(const std::string &path);
+	std::string getFileContent(const std::string &path);
 
 public:
 	HttpResponse(const HttpRequest &request, const ServerConfig &server_config);
