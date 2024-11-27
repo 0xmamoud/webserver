@@ -54,8 +54,13 @@ void HttpResponse::handleDELETE()
 
 bool HttpResponse::parsePath()
 {
-	this->path = this->request.getUri();
-	if (this->isDirectory(this->path))
+	std::string uri = this->request.getUri();
+	std::map<std::string, LocationConfig>::const_iterator it_location = this->server_config.locations.find(uri);
+	if (it_location == this->server_config.locations.end())
+		return false;
+
+	this->path = it_location->second.root + uri;
+	if (FileSystem::isDirectory(this->path))
 	{
 		std::map<std::string, LocationConfig>::const_iterator it_location = this->server_config.locations.find(this->path);
 		if (it_location == this->server_config.locations.end())
@@ -69,7 +74,7 @@ bool HttpResponse::parsePath()
 			this->path += it_location->second.index;
 		else if (!index_file && it_location->second.autoindex)
 		{
-			std::vector<std::string> files = this->readDirectory(this->path);
+			std::vector<std::string> files = FileSystem::readDirectory(this->path);
 			if (files.size() == 1)
 				this->path += files[0];
 		}
@@ -85,21 +90,21 @@ bool HttpResponse::parsePath()
 
 bool HttpResponse::pathAutorization(const std::string &path)
 {
-	if (this->isDirectory(path))
+	if (FileSystem::isDirectory(path))
 	{
-		if (this->isDirectoryExists(path))
+		if (FileSystem::isDirectoryExists(path))
 			return true;
 		this->generate404();
 	}
 	else
 	{
-		if (!this->isFileExists(this->path))
+		if (!FileSystem::isFileExists(this->path))
 		{
 			this->generate404();
 			return false;
 		}
 
-		if (!this->isFileReadable(this->path))
+		if (!FileSystem::isFileReadable(this->path))
 		{
 			this->generate403();
 			return false;
@@ -108,4 +113,56 @@ bool HttpResponse::pathAutorization(const std::string &path)
 	}
 
 	return false;
+}
+
+bool HttpResponse::isCGI()
+{
+	return false;
+}
+
+bool HttpResponse::isMethodAllowed(const LocationConfig &location)
+{
+	(void)location;
+	return true;
+}
+
+void HttpResponse::generate200()
+{
+	this->status_code = "200";
+	this->status_message = "OK";
+}
+
+void HttpResponse::generate403()
+{
+	this->status_code = "403";
+	this->status_message = "Forbidden";
+}
+
+void HttpResponse::generate404()
+{
+	this->status_code = "404";
+	this->status_message = "Not Found";
+}
+
+void HttpResponse::generate405()
+{
+	this->status_code = "405";
+	this->status_message = "Method Not Allowed";
+}
+
+void HttpResponse::generate413()
+{
+	this->status_code = "413";
+	this->status_message = "Payload Too Large";
+}
+
+void HttpResponse::generate500()
+{
+	this->status_code = "500";
+	this->status_message = "Internal Server Error";
+}
+
+void HttpResponse::sendResponse(int client_fd)
+{
+	(void)client_fd;
 }

@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include "FileSystem.hpp"
 
 class HttpResponse
 {
@@ -43,18 +44,8 @@ private:
 
 	bool isCGI();
 	bool isMethodAllowed(const LocationConfig &location);
-	bool isDirectory(const std::string &path);
-	bool isFile(const std::string &path);
 	bool parsePath();
 	bool pathAutorization(const std::string &path);
-	bool isFileExists(const std::string &path);
-	bool isDirectoryExists(const std::string &path);
-	bool isFileReadable(const std::string &path);
-
-	std::vector<std::string> readDirectory(const std::string &path);
-
-	std::string getContentType(const std::string &path);
-	std::string getFileContent(const std::string &path);
 
 public:
 	HttpResponse(const HttpRequest &request, const ServerConfig &server_config);
