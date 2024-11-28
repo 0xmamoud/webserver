@@ -160,3 +160,8 @@ std::string HttpRequest::getConnection() const
 {
 	return this->Connection;
 }
+
+void HttpRequest::setUri(const std::string &uri)
+{
+	this->uri = uri;
+}

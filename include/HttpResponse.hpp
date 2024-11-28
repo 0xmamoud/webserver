@@ -28,22 +28,17 @@ private:
 	std::string body;
 	std::string path;
 
-	void generateResponse();
+	std::string getErrorPage(int error_code);
 
 	void handleGET();
 	void handlePOST();
 	void handleDELETE();
 	void handleCGI();
-
-	void generate200();
-	void generate403();
-	void generate404();
-	void generate405();
-	void generate413();
-	void generate500();
+	void generateResponse();
+	void directoryResponseTemplate(const std::vector<std::string> &files);
+	void generateHeader(const std::string &status_code, const std::string &status_message, const std::string &content_type);
 
 	bool isCGI();
-	bool isMethodAllowed(const LocationConfig &location);
 	bool parsePath();
 	bool pathAutorization(const std::string &path);
 

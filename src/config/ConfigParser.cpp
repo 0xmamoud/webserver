@@ -103,6 +103,12 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 {
 	if (line.find("root") != std::string::npos)
 		current_location.root = this->getValue(line);
+	else if (line.find("autoindex") != std::string::npos)
+	{
+		std::string value = this->getValue(line);
+		if (value == "on")
+			current_location.autoindex = 1;
+	}
 	else if (line.find("index") != std::string::npos)
 		current_location.index = this->getValue(line);
 	else if (line.find("methods") != std::string::npos)
@@ -111,12 +117,7 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 		current_location.cgi_path = this->getValue(line);
 	else if (line.find("cgi_extension") != std::string::npos)
 		current_location.cgi_extension = this->getValue(line);
-	else if (line.find("autoindex") != std::string::npos)
-	{
-		std::string value = this->getValue(line);
-		if (value == "on")
-			current_location.autoindex = 1;
-	}
+
 	else if (line.find("upload_path") != std::string::npos)
 	{
 		current_location.upload_path = this->getValue(line);
@@ -207,8 +208,8 @@ void ConfigParser::handleRedirection(Config &config)
 		{
 			if (!it2->second.redirect.empty())
 			{
-				Logger::log(Logger::DEBUG, "redirection: " + it2->second.redirect);
-				ServerConfig redirection = this->findServerConfig(it2->second.redirect, config);
+				std::string server_name = it2->second.redirect.substr(0, it2->second.redirect.find('/'));
+				ServerConfig redirection = this->findServerConfig(server_name, config);
 				it2->second.servers[it2->second.redirect] = redirection;
 			}
 		}

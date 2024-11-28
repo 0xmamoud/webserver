@@ -48,10 +48,9 @@ void Connection::handleRequest()
 	try
 	{
 		HttpRequest request(this->buffer);
-		ServerConfig server_config = this->getServerConfig(request.getUri());
-		Logger::log(Logger::DEBUG, "redirect: " + server_config.server_name);
-		// HttpResponse response(request, this->server_config);
-		// response.sendResponse(client_fd);
+		ServerConfig server_config = this->getServerConfig(request);
+		HttpResponse response(request, this->server_config);
+		response.sendResponse(client_fd);
 	}
 	catch (const std::exception &e)
 	{
@@ -86,14 +85,22 @@ void Connection::manageClientActivity()
 	this->keep_alive = false;
 };
 
-ServerConfig Connection::getServerConfig(const std::string &path)
+ServerConfig Connection::getServerConfig(HttpRequest &request)
 {
 
-	std::map<std::string, LocationConfig>::iterator it = this->server_config.locations.find(path);
+	std::string uri = request.getUri();
+	if (uri.empty())
+		return this->server_config;
+
+	std::map<std::string, LocationConfig>::iterator it = this->server_config.locations.find(uri);
 	if (it == this->server_config.locations.end())
 		return this->server_config;
 	if (it->second.redirect.empty())
 		return this->server_config;
+
+	size_t slash_pos = it->second.redirect.find('/');
+	std::string new_uri = (slash_pos != std::string::npos) ? it->second.redirect.substr(slash_pos) : "/";
+	request.setUri(new_uri);
 	return it->second.servers[it->second.redirect];
 };
 

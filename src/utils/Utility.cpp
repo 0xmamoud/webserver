@@ -37,3 +37,14 @@ std::string trim(const std::string &str, const std::string &whitespace)
 
 	return str.substr(start, end - start + 1);
 }
+
+std::string getDate()
+{
+	std::time_t now = std::time(0);
+	std::tm *gmtm = std::gmtime(&now);
+
+	char buf[30];
+	std::strftime(buf, 30, "%a, %d %b %Y %H:%M:%S GMT", gmtm);
+
+	return std::string(buf);
+}

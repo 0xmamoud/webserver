@@ -27,7 +27,7 @@ private:
 
 	bool isRequestComplete();
 	void manageClientActivity();
-	ServerConfig getServerConfig(const std::string &path);
+	ServerConfig getServerConfig(HttpRequest &request);
 	void closeConnection();
 
 public:

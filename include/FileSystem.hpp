@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fstream>
+#include <iostream>
 
 class FileSystem
 {

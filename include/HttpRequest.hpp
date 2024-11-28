@@ -38,6 +38,8 @@ public:
 	std::string getContentType() const;
 	std::string getBody() const;
 	std::string getQueryString() const;
+
+	void setUri(const std::string &uri);
 };
 
 #endif

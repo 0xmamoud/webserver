@@ -102,8 +102,7 @@ std::string FileSystem::getFileContent(const std::string &path)
 {
 	std::ifstream file(path.c_str());
 	if (!file.is_open())
-		throw std::runtime_error("Invalid file");
-
+		throw std::runtime_error("Failed to open file: " + path);
 	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	file.close();
 
