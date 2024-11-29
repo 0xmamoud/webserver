@@ -56,10 +56,12 @@ void HttpResponse::handleGET()
 			return;
 		}
 		this->directoryResponseTemplate(files);
+		this->generateHeader("200", "OK", FileSystem::getContentType(this->path));
+		this->content_type = "text/html";
+		return;
 	}
-	else
-		this->body = FileSystem::getFileContent(this->path);
 
+	this->body = FileSystem::getFileContent(this->path);
 	this->generateHeader("200", "OK", FileSystem::getContentType(this->path));
 }
 

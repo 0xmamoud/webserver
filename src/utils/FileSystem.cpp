@@ -78,6 +78,9 @@ std::vector<std::string> FileSystem::readDirectory(const std::string &path)
 		std::string fileName(entry->d_name);
 		if (fileName == "." || fileName == "..")
 			continue;
+		std::string fullPath = path.length() - 1 == '/' ? path + fileName : path + "/" + fileName;
+		if (isDirectory(fullPath))
+			continue;
 		files.push_back(fileName);
 	}
 
