@@ -86,7 +86,7 @@ bool HttpResponse::parsePath()
 		return false;
 	}
 
-	this->path = it_location->second.root + uri;
+	this->path = it_location->second.root;
 	if (FileSystem::isDirectory(this->path))
 	{
 		if (this->path[this->path.length() - 1] != '/')
@@ -102,9 +102,13 @@ bool HttpResponse::parsePath()
 				this->path += files[0];
 		}
 		else
+		{
+			this->body = this->getErrorPage(403);
+			this->generateHeader("403", "Forbidden", "text/html");
 			return false;
+		}
 	}
-
+	std::cout << "Path: " << this->path << std::endl;
 	if (!this->pathAutorization(this->path))
 		return false;
 
