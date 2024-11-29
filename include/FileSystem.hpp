@@ -10,6 +10,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 class FileSystem
 {
@@ -19,12 +20,8 @@ private:
 
 	static const std::map<std::string, std::string> content_types;
 	static std::map<std::string, std::string> initializeContentTypes();
-	static void createFile(const std::string &path, const std::string &content);
 
 	static bool isBinaryFile(const std::string &extension);
-
-	static std::string readBinaryFile(const std::string &path);
-	static void writeBinaryFile(const std::string &path, const std::string &content);
 
 public:
 	static bool isDirectory(const std::string &path);
@@ -33,8 +30,10 @@ public:
 	static bool isDirectoryExists(const std::string &path);
 	static bool isFileReadable(const std::string &path);
 
+	static void createFile(const std::string &path, const std::string &content);
 	static std::vector<std::string> readDirectory(const std::string &path);
 	static std::string getContentType(const std::string &path);
 	static std::string getFileContent(const std::string &path);
+	static std::string getRandomeFileName();
 };
 #endif

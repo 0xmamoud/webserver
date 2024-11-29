@@ -117,15 +117,10 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 		current_location.cgi_path = this->getValue(line);
 	else if (line.find("cgi_extension") != std::string::npos)
 		current_location.cgi_extension = this->getValue(line);
-
 	else if (line.find("upload_path") != std::string::npos)
-	{
 		current_location.upload_path = this->getValue(line);
-	}
 	else if (line.find("redirect") != std::string::npos)
-	{
 		current_location.redirect = this->getValue(line);
-	}
 };
 
 void ConfigParser::handleServerConfig(ServerConfig &current_server, const std::string &line)

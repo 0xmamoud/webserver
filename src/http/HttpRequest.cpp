@@ -87,7 +87,7 @@ void HttpRequest::parseConnection(const std::string &header)
 
 void HttpRequest::parseContentType(const std::string &header)
 {
-	size_t start = header.find("Accept: ");
+	size_t start = header.find("Content-Type: ");
 	if (start == std::string::npos)
 	{
 		this->content_type = "";

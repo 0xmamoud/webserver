@@ -67,7 +67,16 @@ void HttpResponse::handleGET()
 
 void HttpResponse::handlePOST()
 {
-	Logger::log(Logger::DEBUG, "POST handling");
+	if (!this->getFullPath("POST"))
+		return;
+
+	std::string content_type = this->request.getContentType();
+	std::string file_extension = content_type.substr(content_type.find_last_of("/") + 1);
+	std::string file_name = FileSystem::getRandomeFileName() + "." + file_extension;
+	this->path += (this->path[this->path.length() - 1] == '/' ? "" : "/") + file_name;
+	FileSystem::createFile(this->path, this->request.getBody());
+
+	this->generateHeader("200", "OK", "text/html");
 }
 
 void HttpResponse::handleDELETE()
@@ -108,10 +117,37 @@ bool HttpResponse::parsePath()
 			return false;
 		}
 	}
-	std::cout << "Path: " << this->path << std::endl;
+
 	if (!this->pathAutorization(this->path))
 		return false;
 
+	return true;
+}
+
+bool HttpResponse::getFullPath(const std::string &method)
+{
+	std::string uri = this->request.getUri();
+	std::map<std::string, LocationConfig>::const_iterator it_location = this->server_config.locations.find(uri);
+	if (it_location == this->server_config.locations.end())
+	{
+		this->body = this->getErrorPage(404);
+		this->generateHeader("404", "Not Found", "text/html");
+		return false;
+	}
+
+	if (method == "POST" || method == "DELETE")
+		this->path = it_location->second.upload_path;
+	else if (method == "CGI")
+		this->path = it_location->second.cgi_path;
+	else
+		this->path = it_location->second.root;
+
+	if (this->path.empty())
+	{
+		this->body = this->getErrorPage(404);
+		this->generateHeader("404", "Not Found", "text/html");
+		return false;
+	}
 	return true;
 }
 

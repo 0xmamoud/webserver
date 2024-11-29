@@ -41,6 +41,7 @@ private:
 	bool isCGI();
 	bool parsePath();
 	bool pathAutorization(const std::string &path);
+	bool getFullPath(const std::string &method);
 
 public:
 	HttpResponse(const HttpRequest &request, const ServerConfig &server_config);

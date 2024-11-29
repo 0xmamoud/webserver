@@ -140,3 +140,12 @@ bool FileSystem::isBinaryFile(const std::string &extension)
 
 	return text_types.find(it->second) == text_types.end();
 }
+
+std::string FileSystem::getRandomeFileName()
+{
+	std::ostringstream oss;
+	oss << time(0);
+
+	std::string fine_name = "upload_" + oss.str();
+	return fine_name;
+}
