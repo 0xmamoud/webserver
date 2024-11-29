@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -18,6 +19,12 @@ private:
 
 	static const std::map<std::string, std::string> content_types;
 	static std::map<std::string, std::string> initializeContentTypes();
+	static void createFile(const std::string &path, const std::string &content);
+
+	static bool isBinaryFile(const std::string &extension);
+
+	static std::string readBinaryFile(const std::string &path);
+	static void writeBinaryFile(const std::string &path, const std::string &content);
 
 public:
 	static bool isDirectory(const std::string &path);

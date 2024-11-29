@@ -88,23 +88,52 @@ std::string FileSystem::getContentType(const std::string &path)
 {
 	size_t pos = path.find_last_of(".");
 	if (pos == std::string::npos)
-		return "application/octet-stream";
+		return "text/plain";
 
 	std::string extension = path.substr(pos);
 	std::map<std::string, std::string>::const_iterator it = content_types.find(extension);
 	if (it == content_types.end())
-		return "application/octet-stream";
+		return "text/plain";
 
 	return it->second;
 }
 
 std::string FileSystem::getFileContent(const std::string &path)
 {
-	std::ifstream file(path.c_str());
+	bool binary = isBinaryFile(path.substr(path.find_last_of(".")));
+	std::ifstream file(path.c_str(), binary ? std::ios::binary : std::ios::in);
 	if (!file.is_open())
 		throw std::runtime_error("Failed to open file: " + path);
 	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	file.close();
 
 	return content;
+}
+
+void FileSystem::createFile(const std::string &path, const std::string &content)
+{
+	bool binary = isBinaryFile(path.substr(path.find_last_of(".")));
+	std::ofstream file(path.c_str(), binary ? std::ios::binary : std::ios::out);
+	if (!file.is_open())
+		throw std::runtime_error("Failed to create file: " + path);
+	file << content;
+	file.close();
+}
+
+bool FileSystem::isBinaryFile(const std::string &extension)
+{
+
+	std::set<std::string> text_types;
+	text_types.insert("text/html");
+	text_types.insert("text/css");
+	text_types.insert("application/javascript");
+	text_types.insert("application/json");
+	text_types.insert("application/xml");
+	text_types.insert("text/plain");
+
+	std::map<std::string, std::string>::const_iterator it = content_types.find(extension);
+	if (it == content_types.end())
+		return false;
+
+	return text_types.find(it->second) == text_types.end();
 }

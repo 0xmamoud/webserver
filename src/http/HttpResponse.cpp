@@ -152,7 +152,7 @@ void HttpResponse::generateHeader(const std::string &status_code, const std::str
 	this->status_code = status_code;
 	this->status_message = status_message;
 	this->date = getDate();
-	this->keep_alive = this->request.getConnection();
+	this->keep_alive = status_code == "200" ? this->request.getConnection() : "close";
 	oss << this->body.length();
 	this->content_type = content_type;
 	this->content_length = oss.str();
@@ -191,7 +191,7 @@ void HttpResponse::sendResponse(int client_fd)
 	response += "Connection: " + this->keep_alive + "\r\n\r\n";
 	response += this->body;
 
-	Logger::log(Logger::DEBUG, "Response: " + response);
+	// Logger::log(Logger::DEBUG, "Response: " + response);
 
 	send(client_fd, response.c_str(), response.length(), 0);
 }
