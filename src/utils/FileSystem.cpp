@@ -84,6 +84,8 @@ std::vector<std::string> FileSystem::readDirectory(const std::string &path)
 		files.push_back(fileName);
 	}
 
+	closedir(dir);
+
 	return files;
 }
 
@@ -123,6 +125,49 @@ void FileSystem::createFile(const std::string &path, const std::string &content)
 	file.close();
 }
 
+void FileSystem::deleteFile(const std::string &path)
+{
+	if (unlink(path.c_str()) != 0)
+		throw std::runtime_error("Failed to delete file: " + path);
+}
+
+// void FileSystem::deleteDirectory(const std::string &path)
+// {
+// 	DIR *dir = opendir(path.c_str());
+// 	if (dir == NULL)
+// 		throw std::runtime_error("Failed to delete directory: " + path);
+// 	std::cout << "Deleting directory: " << path << std::endl;
+
+// 	struct dirent *entry;
+// 	while ((entry = readdir(dir)) != NULL)
+// 	{
+// 		std::string fileName(entry->d_name);
+// 		if (fileName == "." || fileName == "..")
+// 			continue;
+// 		std::string fullPath = (path[path.length() - 1] == '/') ? path + fileName : path + "/" + fileName;
+// 		if (isDirectory(fullPath))
+// 			deleteDirectory(fullPath);
+// 		else
+// 		{
+// 			try
+// 			{
+// 				std::cout << "Deleting file: " << fullPath << std::endl;
+// 				deleteFile(fullPath);
+// 			}
+// 			catch (const std::exception &e)
+// 			{
+// 				closedir(dir);
+// 				throw std::runtime_error("Failed to delete directory: " + path);
+// 			}
+// 		}
+// 	}
+
+// 	closedir(dir);
+// 	if (rmdir(path.c_str()) != 0)
+// 		throw std::runtime_error("Failed to delete directory: " + path);
+// 	std::cout << "Directory deleted: " << path << std::endl;
+// }
+
 bool FileSystem::isBinaryFile(const std::string &extension)
 {
 
@@ -148,4 +193,19 @@ std::string FileSystem::getRandomeFileName()
 
 	std::string fine_name = "upload_" + oss.str();
 	return fine_name;
+}
+
+std::string FileSystem::getFileExtension(const std::string &filename)
+{
+	size_t pos = filename.find_last_of(".");
+	if (pos == std::string::npos)
+		return "";
+
+	std::string file_extension = filename.substr(pos);
+
+	std::map<std::string, std::string>::const_iterator it = content_types.find(file_extension);
+	if (it == content_types.end())
+		return "";
+
+	return file_extension;
 }

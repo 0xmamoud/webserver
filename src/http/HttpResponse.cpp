@@ -14,6 +14,13 @@ void HttpResponse::generateResponse()
 	{
 		std::string method = this->request.getMethod();
 
+		if (!this->isMethodAllowed(method))
+		{
+			this->body = this->getErrorPage(405);
+			this->generateHeader("405", "Method Not Allowed", "text/html");
+			return;
+		}
+
 		if (this->isCGI())
 			return this->handleCGI();
 		if (method == "GET")
@@ -76,7 +83,7 @@ void HttpResponse::handlePOST()
 	this->path += (this->path[this->path.length() - 1] == '/' ? "" : "/") + file_name;
 	FileSystem::createFile(this->path, this->request.getBody());
 
-	this->generateHeader("200", "OK", "text/html");
+	this->generateHeader("200", "OK", "application/json");
 }
 
 void HttpResponse::handleDELETE()
@@ -84,20 +91,9 @@ void HttpResponse::handleDELETE()
 	if (!this->getFullPath("DELETE"))
 		return;
 
-	// if (FileSystem::isDirectory(this->path))
-	// {
-	// 	this->body = this->getErrorPage(403);
-	// 	this->generateHeader("403", "Forbidden", "text/html");
-	// 	return;
-	// }
+	FileSystem::deleteFile(this->path);
 
-	// if (FileSystem::deleteFile(this->path))
-	// 	this->generateHeader("200", "OK", "text/html");
-	// else
-	// {
-	// 	this->body = this->getErrorPage(404);
-	// 	this->generateHeader("404", "Not Found", "text/html");
-	// }
+	this->generateHeader("200", "OK", "application/json");
 }
 
 bool HttpResponse::parsePath()
@@ -151,8 +147,23 @@ bool HttpResponse::getFullPath(const std::string &method)
 		return false;
 	}
 
-	if (method == "POST" || method == "DELETE")
+	if (method == "POST")
 		this->path = it_location->second.upload_path;
+	else if (method == "DELETE")
+	{
+		this->path = it_location->second.root;
+		if (!FileSystem::getFileExtension(this->path + uri).empty())
+			this->path += uri;
+
+		std::cout << "Path: " << this->path << std::endl;
+
+		if (FileSystem::isDirectory(this->path))
+		{
+			this->body = this->getErrorPage(403);
+			this->generateHeader("403", "Forbidden", "text/html");
+			return false;
+		}
+	}
 	else if (method == "CGI")
 		this->path = it_location->second.cgi_path;
 	else
@@ -204,6 +215,16 @@ bool HttpResponse::pathAutorization(const std::string &path)
 bool HttpResponse::isCGI()
 {
 	return false;
+}
+
+bool HttpResponse::isMethodAllowed(const std::string &method)
+{
+	std::map<std::string, LocationConfig>::const_iterator it_location = this->server_config.locations.find(this->request.getUri());
+	if (it_location == this->server_config.locations.end())
+		return true;
+
+	std::vector<std::string> methods = it_location->second.methods;
+	return std::find(methods.begin(), methods.end(), method) != methods.end();
 }
 
 void HttpResponse::generateHeader(const std::string &status_code, const std::string &status_message, const std::string &content_type)

@@ -31,9 +31,13 @@ public:
 	static bool isFileReadable(const std::string &path);
 
 	static void createFile(const std::string &path, const std::string &content);
+	static void deleteFile(const std::string &path);
+	// static void deleteDirectory(const std::string &path);
+
 	static std::vector<std::string> readDirectory(const std::string &path);
 	static std::string getContentType(const std::string &path);
 	static std::string getFileContent(const std::string &path);
 	static std::string getRandomeFileName();
+	static std::string getFileExtension(const std::string &filename);
 };
 #endif

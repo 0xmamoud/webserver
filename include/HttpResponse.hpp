@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "FileSystem.hpp"
+#include <algorithm>
 
 class HttpResponse
 {
@@ -39,6 +40,7 @@ private:
 	void generateHeader(const std::string &status_code, const std::string &status_message, const std::string &content_type);
 
 	bool isCGI();
+	bool isMethodAllowed(const std::string &method);
 	bool parsePath();
 	bool pathAutorization(const std::string &path);
 	bool getFullPath(const std::string &method);
