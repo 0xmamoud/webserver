@@ -81,7 +81,23 @@ void HttpResponse::handlePOST()
 
 void HttpResponse::handleDELETE()
 {
-	Logger::log(Logger::DEBUG, "DELETE handling");
+	if (!this->getFullPath("DELETE"))
+		return;
+
+	// if (FileSystem::isDirectory(this->path))
+	// {
+	// 	this->body = this->getErrorPage(403);
+	// 	this->generateHeader("403", "Forbidden", "text/html");
+	// 	return;
+	// }
+
+	// if (FileSystem::deleteFile(this->path))
+	// 	this->generateHeader("200", "OK", "text/html");
+	// else
+	// {
+	// 	this->body = this->getErrorPage(404);
+	// 	this->generateHeader("404", "Not Found", "text/html");
+	// }
 }
 
 bool HttpResponse::parsePath()
@@ -148,6 +164,10 @@ bool HttpResponse::getFullPath(const std::string &method)
 		this->generateHeader("404", "Not Found", "text/html");
 		return false;
 	}
+
+	if (!this->pathAutorization(this->path))
+		return false;
+
 	return true;
 }
 
