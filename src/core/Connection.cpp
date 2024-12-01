@@ -1,6 +1,6 @@
 #include "../../include/Connection.hpp"
 
-Connection::Connection(int fd, ServerConfig &server_config) : client_fd(fd), server_config(server_config), keep_alive(false), last_activity(time(0)), timeout(5) {};
+Connection::Connection(int fd, ServerConfig &server_config) : client_fd(fd), server_config(server_config), keep_alive(false), data_chunked(false), last_activity(time(0)), timeout(5) {};
 
 Connection &Connection::operator=(const Connection &other)
 {
@@ -42,8 +42,11 @@ void Connection::handleRequest()
 		return;
 	}
 
-	this->buffer.append(buf, bytes_read);
+	this->parseBuffer(buf, bytes_read);
 	this->manageClientActivity();
+
+	if (!this->isRequestComplete())
+		return;
 
 	try
 	{
@@ -51,6 +54,7 @@ void Connection::handleRequest()
 		ServerConfig server_config = this->getServerConfig(request);
 		HttpResponse response(request, this->server_config);
 		response.sendResponse(client_fd);
+		this->buffer.clear();
 	}
 	catch (const std::exception &e)
 	{
@@ -61,9 +65,58 @@ void Connection::handleRequest()
 	}
 };
 
+void Connection::parseBuffer(char *buf, int bytes_read)
+{
+	std::string buffer(buf, bytes_read);
+	std::string header = buffer.substr(0, buffer.find("\r\n\r\n"));
+	if (header.empty())
+		return;
+	if (header.find("Transfer-Encoding: chunked") != std::string::npos)
+		this->data_chunked = true;
+
+	if (!this->data_chunked)
+	{
+		this->buffer += buffer;
+		return;
+	}
+
+	std::string body = buffer.substr(buffer.find("\r\n\r\n") + 4);
+	if (this->buffer.empty() && body.empty())
+	{
+
+		this->data_chunked = false;
+		this->buffer += buffer;
+		return;
+	}
+	else if (this->buffer.empty() && !body.empty())
+		this->buffer += header;
+
+	if (body.find("0\r\n\r\n") == std::string::npos)
+		this->data_chunked = false;
+	this->setBufferChunks(body);
+};
+
+void Connection::setBufferChunks(const std::string &body)
+{
+	std::vector<std::string> chunks = split(body, "\r\n");
+	for (size_t i = 0; i < chunks.size(); i++)
+	{
+		if (chunks[i].empty())
+			continue;
+		if (chunks[i].find("0") != std::string::npos)
+		{
+			this->data_chunked = false;
+			break;
+		}
+		if (i % 2 == 0)
+			continue;
+		this->buffer += chunks[i];
+	}
+};
+
 bool Connection::isRequestComplete()
 {
-	return buffer.find("\r\n\r\n") != std::string::npos;
+	return !this->data_chunked;
 };
 
 bool Connection::isTimedOut()

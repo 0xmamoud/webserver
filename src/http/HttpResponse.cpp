@@ -155,7 +155,6 @@ bool HttpResponse::getFullPath(const std::string &method)
 		if (!FileSystem::getFileExtension(this->path + uri).empty())
 			this->path += uri;
 
-		std::cout << "Path: " << this->path << std::endl;
 
 		if (FileSystem::isDirectory(this->path))
 		{
@@ -277,4 +276,6 @@ void HttpResponse::sendResponse(int client_fd)
 	// Logger::log(Logger::DEBUG, "Response: " + response);
 
 	send(client_fd, response.c_str(), response.length(), 0);
+	if (this->keep_alive != "keep-alive")
+		close(client_fd);
 }

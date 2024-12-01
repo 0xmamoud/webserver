@@ -4,6 +4,7 @@
 #include <string>
 #include <string.h>
 #include <map>
+#include <vector>
 #include "Config.hpp"
 #include <unistd.h>
 #include <stdio.h>
@@ -21,14 +22,17 @@ private:
 	int client_fd;
 	ServerConfig &server_config;
 	bool keep_alive;
+	bool data_chunked;
 	time_t last_activity;
 	int timeout;
 	std::string buffer;
 
 	bool isRequestComplete();
-	void manageClientActivity();
-	ServerConfig getServerConfig(HttpRequest &request);
 	void closeConnection();
+	void manageClientActivity();
+	void parseBuffer(char *buf, int bytes_read);
+	void setBufferChunks(const std::string &body);
+	ServerConfig getServerConfig(HttpRequest &request);
 
 public:
 	Connection(int fd, ServerConfig &server_config);
