@@ -15,7 +15,7 @@ struct LocationConfig
 	int autoindex;
 	std::vector<std::string> methods;
 	std::string cgi_path;
-	std::string cgi_extension;
+	std::string cgi_bin;
 	std::string upload_path;
 	std::string redirect;
 	std::map<std::string, ServerConfig> servers;

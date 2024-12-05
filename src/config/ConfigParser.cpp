@@ -115,8 +115,8 @@ void ConfigParser::handleLocationConfig(LocationConfig &current_location, const 
 		current_location.methods = this->split(getValue(line), ' ');
 	else if (line.find("cgi_path") != std::string::npos)
 		current_location.cgi_path = this->getValue(line);
-	else if (line.find("cgi_extension") != std::string::npos)
-		current_location.cgi_extension = this->getValue(line);
+	else if (line.find("cgi_bin") != std::string::npos)
+		current_location.cgi_bin = this->getValue(line);
 	else if (line.find("upload_path") != std::string::npos)
 		current_location.upload_path = this->getValue(line);
 	else if (line.find("redirect") != std::string::npos)
@@ -187,9 +187,9 @@ void ConfigParser::normalizeLocationConfig(Config &config)
 			}
 			if (it2->second.upload_path.empty())
 				it2->second.upload_path = it2->second.root;
-			if (!it2->second.cgi_path.empty() && it2->second.cgi_extension.empty())
+			if (!it2->second.cgi_path.empty() && it2->second.cgi_bin.empty())
 				throw std::runtime_error("CGI extension is required");
-			if (!it2->second.cgi_extension.empty() && it2->second.cgi_path.empty())
+			if (!it2->second.cgi_bin.empty() && it2->second.cgi_path.empty())
 				throw std::runtime_error("CGI path is required");
 		}
 	}
