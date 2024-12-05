@@ -66,7 +66,6 @@ void HttpResponse::handleCGI()
 	cgi_handler.setContentLength(oss.str());
 	cgi_handler.setQueryString(this->request.getQueryString());
 	cgi_handler.setScriptName(this->path);
-	std::cout << "Content-length: " << this->request.getContentLength() << std::endl;
 
 	this->body = cgi_handler.execute();
 }

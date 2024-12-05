@@ -38,11 +38,9 @@ void handlePostRequest()
 		return;
 	}
 
-	// Read the request body from standard input
 	std::string body(contentLength, '\0');
 	std::cin.read(&body[0], contentLength);
 
-	// Output the request body
 	std::cout << "Content-Type: text/plain\r\n\r\n";
 	std::cout << "POST Request Received:\n";
 	std::cout << "Body: " << body << "\n";
@@ -50,7 +48,6 @@ void handlePostRequest()
 
 int main()
 {
-	// Retrieve the request method from the environment variable
 	const char *requestMethod = getenv("REQUEST_METHOD");
 	std::cout << "HTTP/1.1 200 OK\r\n";
 	if (requestMethod == nullptr)
