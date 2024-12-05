@@ -24,6 +24,7 @@ SRC = ${SRC_DIR}/main.cpp \
 	${LOG_DIR}/Logger.cpp \
 	${HTTP_DIR}/HttpRequest.cpp \
 	${HTTP_DIR}/HttpResponse.cpp \
+	${HTTP_DIR}/CgiHandler.cpp \
 	${UTILS_DIR}/Utility.cpp \
 	${UTILS_DIR}/FileSystem.cpp\
 

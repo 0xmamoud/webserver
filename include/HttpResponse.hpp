@@ -5,6 +5,7 @@
 #include "HttpRequest.hpp"
 #include "Config.hpp"
 #include "Logger.hpp"
+#include "CgiHandler.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -23,9 +24,9 @@ private:
 	std::string status_code;
 	std::string status_message;
 	std::string content_type;
-	std::string content_length;
 	std::string date;
 	std::string keep_alive;
+	std::string content_length;
 	std::string body;
 	std::string path;
 

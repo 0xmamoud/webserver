@@ -42,10 +42,33 @@ void HttpResponse::generateResponse()
 		this->generateHeader("500", "Internal Server Error", "text/html");
 	}
 }
+bool HttpResponse::isCGI()
+{
+	std::string uri = this->request.getUri();
+	std::map<std::string, LocationConfig>::const_iterator it_location = this->server_config.locations.find(uri);
+	if (it_location == this->server_config.locations.end())
+		return false;
+
+	return !it_location->second.cgi_bin.empty();
+}
 
 void HttpResponse::handleCGI()
 {
-	Logger::log(Logger::DEBUG, "CGI handling");
+	std::ostringstream oss;
+	if (!this->getFullPath("CGI"))
+		return;
+
+	CgiHandler cgi_handler;
+	cgi_handler.setMethod(this->request.getMethod());
+	cgi_handler.setBody(this->request.getBody());
+	cgi_handler.setContentType(this->request.getContentType());
+	oss << this->request.getContentLength();
+	cgi_handler.setContentLength(oss.str());
+	cgi_handler.setQueryString(this->request.getQueryString());
+	cgi_handler.setScriptName(this->path);
+	std::cout << "Content-length: " << this->request.getContentLength() << std::endl;
+
+	this->body = cgi_handler.execute();
 }
 
 void HttpResponse::handleGET()
@@ -155,7 +178,6 @@ bool HttpResponse::getFullPath(const std::string &method)
 		if (!FileSystem::getFileExtension(this->path + uri).empty())
 			this->path += uri;
 
-
 		if (FileSystem::isDirectory(this->path))
 		{
 			this->body = this->getErrorPage(403);
@@ -164,7 +186,13 @@ bool HttpResponse::getFullPath(const std::string &method)
 		}
 	}
 	else if (method == "CGI")
+	{
+
 		this->path = it_location->second.cgi_path;
+		if (this->path.length() > 0 && this->path[this->path.length() - 1] != '/')
+			this->path += '/';
+		this->path += it_location->second.cgi_bin;
+	}
 	else
 		this->path = it_location->second.root;
 
@@ -208,11 +236,6 @@ bool HttpResponse::pathAutorization(const std::string &path)
 		return true;
 	}
 
-	return false;
-}
-
-bool HttpResponse::isCGI()
-{
 	return false;
 }
 
@@ -265,6 +288,13 @@ std::string HttpResponse::getErrorPage(int error_code)
 
 void HttpResponse::sendResponse(int client_fd)
 {
+	if (this->isCGI())
+	{
+		send(client_fd, this->body.c_str(), this->body.length(), 0);
+		if (this->keep_alive != "keep-alive")
+			close(client_fd);
+		return;
+	}
 	std::string response = this->http_version + " " + this->status_code + " " + this->status_message + "\r\n";
 	response += "Date: " + this->date + "\r\n";
 	response += "Server: webserv/1.0\r\n";

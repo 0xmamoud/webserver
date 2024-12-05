@@ -15,6 +15,8 @@ void HttpRequest::parse()
 	this->parseConnection(header);
 	this->parseContentType(header);
 	this->parseBody();
+	this->content_length = this->request.length();
+	std::cout << "Content-length: " << this->content_length << std::endl;
 }
 
 std::string HttpRequest::getHeader() const
@@ -164,4 +166,10 @@ std::string HttpRequest::getConnection() const
 void HttpRequest::setUri(const std::string &uri)
 {
 	this->uri = uri;
+}
+
+int HttpRequest::getContentLength() const
+{
+	std::cout << this->content_length << std::endl;
+	return this->content_length;
 }

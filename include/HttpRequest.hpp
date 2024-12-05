@@ -17,6 +17,7 @@ private:
 	std::string Connection;
 	std::string content_type;
 	std::string body;
+	int content_length;
 
 	void parse();
 	std::string getHeader() const;
@@ -38,6 +39,7 @@ public:
 	std::string getContentType() const;
 	std::string getBody() const;
 	std::string getQueryString() const;
+	int getContentLength() const;
 
 	void setUri(const std::string &uri);
 };
