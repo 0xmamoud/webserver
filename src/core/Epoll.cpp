@@ -56,3 +56,13 @@ int Epoll::wait(struct epoll_event *events, int maxevents, int timeout)
 	}
 	return nfds;
 }
+
+int Epoll::remove(int fd)
+{
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_DEL, fd, NULL) < 0)
+	{
+		perror("epoll_ctl");
+		return -1;
+	}
+	return 1;
+}

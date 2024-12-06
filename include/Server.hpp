@@ -32,8 +32,6 @@ private:
 
 public:
 	Server(const Config &config);
-	Server(const Server &other);
-	Server &operator=(const Server &other);
 	~Server();
 
 	void run();

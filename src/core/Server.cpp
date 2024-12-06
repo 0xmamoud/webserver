@@ -11,17 +11,6 @@ Server::Server(const Config &config)
 	}
 }
 
-Server::Server(const Server &other) { *this = other; }
-
-Server &Server::operator=(const Server &other)
-{
-	if (this != &other)
-	{
-		this->server_configs = other.server_configs;
-	}
-	return *this;
-}
-
 Server::~Server()
 {
 	for (std::map<int, ServerConfig>::iterator it = this->server_configs.begin(); it != this->server_configs.end(); ++it)
@@ -186,7 +175,10 @@ void Server::closeConnection()
 	{
 		if (it->second->isTimedOut() || it->second->isClosed())
 		{
+			close(it->first);
+			Logger::log(Logger::DEBUG, "Deleting Connection in closeConnection ");
 			delete it->second;
+			Logger::log(Logger::DEBUG, "Connection deleted in closeConnection ");
 			this->connections.erase(it++);
 		}
 		else
@@ -198,7 +190,11 @@ void Server::safeCleanup()
 {
 	for (std::map<int, Connection *>::iterator it = this->connections.begin(); it != this->connections.end(); ++it)
 	{
+		close(it->first);
+		Logger::log(Logger::DEBUG, "Deleting Connection in safeCleanup ");
 		delete it->second;
+		Logger::log(Logger::DEBUG, "Connection deleted in safeCleanup ");
 	}
+
 	this->connections.clear();
 }

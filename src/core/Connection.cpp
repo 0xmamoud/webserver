@@ -20,6 +20,8 @@ Connection::~Connection()
 {
 	if (client_fd > 0)
 		close(client_fd);
+
+	this->buffer.clear();
 };
 
 void Connection::handleRequest()

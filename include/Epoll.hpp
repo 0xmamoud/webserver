@@ -22,5 +22,6 @@ public:
 
 	int add(int fd, uint32_t events);
 	int wait(struct epoll_event *events, int maxevents, int timeout);
+	int remove(int fd);
 };
 #endif
