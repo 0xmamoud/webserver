@@ -41,6 +41,7 @@ public:
 
 	void handleRequest();
 	bool isTimedOut();
+	bool isClosed();
 	int getTimeout();
 	int getBodySize();
 };

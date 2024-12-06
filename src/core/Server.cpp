@@ -170,7 +170,7 @@ void Server::closeConnection()
 {
 	for (std::map<int, Connection *>::iterator it = this->connections.begin(); it != this->connections.end();)
 	{
-		if (it->second->isTimedOut())
+		if (it->second->isTimedOut() || it->second->isClosed())
 		{
 			delete it->second;
 			this->connections.erase(it++);

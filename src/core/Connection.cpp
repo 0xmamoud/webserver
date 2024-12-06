@@ -124,6 +124,11 @@ bool Connection::isTimedOut()
 	return time(0) - last_activity > timeout;
 };
 
+bool Connection::isClosed()
+{
+	return client_fd < 0;
+};
+
 void Connection::manageClientActivity()
 {
 	this->last_activity = time(0);
