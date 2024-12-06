@@ -4,6 +4,7 @@
 #include "Epoll.hpp"
 #include "Connection.hpp"
 #include "ConfigParser.hpp"
+#include "SignalHandler.hpp"
 #include <vector>
 #include <map>
 #include <sys/types.h>
@@ -27,6 +28,7 @@ private:
 	void handleNewConnection(int server_fd, Epoll &epoll);
 	int makeNonBlocking(int fd);
 	void closeConnection();
+	void safeCleanup();
 
 public:
 	Server(const Config &config);

@@ -27,6 +27,7 @@ SRC = ${SRC_DIR}/main.cpp \
 	${HTTP_DIR}/CgiHandler.cpp \
 	${UTILS_DIR}/Utility.cpp \
 	${UTILS_DIR}/FileSystem.cpp\
+	${UTILS_DIR}/SignalHandler.cpp\
 
 OBJ = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 

@@ -2,11 +2,14 @@
 #include "../include/ConfigParser.hpp"
 #include "../include/Server.hpp"
 #include "../include/Logger.hpp"
+#include "../include/SignalHandler.hpp"
 
 int main()
 {
 	try
 	{
+
+		signal(SIGINT, SignalHandler::handleStop);
 		ConfigParser parser("server.conf");
 		Config config = parser.parseConfig();
 

@@ -83,9 +83,22 @@ void Server::run()
 	}
 
 	struct epoll_event events[10];
-	while (true)
+	while (!SignalHandler::is_interrupted)
 	{
 		int nfds = epoll.wait(events, 10, -1);
+		if (nfds < 0)
+		{
+			if (errno == EINTR)
+				continue;
+
+			if (SignalHandler::is_interrupted)
+			{
+				Logger::log(Logger::INFO, "Closing all connections");
+				this->safeCleanup();
+				break;
+			}
+		}
+
 		for (int i = 0; i < nfds; i++)
 		{
 			if (events[i].events & EPOLLIN)
@@ -105,6 +118,7 @@ void Server::run()
 		}
 		this->closeConnection();
 	}
+	this->safeCleanup();
 }
 
 bool Server::isServerSocket(int fd)
@@ -178,4 +192,13 @@ void Server::closeConnection()
 		else
 			++it;
 	}
+}
+
+void Server::safeCleanup()
+{
+	for (std::map<int, Connection *>::iterator it = this->connections.begin(); it != this->connections.end(); ++it)
+	{
+		delete it->second;
+	}
+	this->connections.clear();
 }

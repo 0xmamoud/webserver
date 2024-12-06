@@ -45,6 +45,12 @@ int Epoll::wait(struct epoll_event *events, int maxevents, int timeout)
 	int nfds = epoll_wait(this->epoll_fd, events, maxevents, timeout);
 	if (nfds < 0)
 	{
+		if (errno == EINTR)
+			return nfds;
+
+		if (SignalHandler::is_interrupted)
+			return nfds;
+
 		perror("epoll_wait");
 		throw std::runtime_error("Failed to wait for events");
 	}
