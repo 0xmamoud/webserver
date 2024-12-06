@@ -2,19 +2,19 @@
 
 Connection::Connection(int fd, ServerConfig &server_config) : client_fd(fd), server_config(server_config), keep_alive(false), data_chunked(false), last_activity(time(0)), timeout(5) {};
 
-Connection &Connection::operator=(const Connection &other)
-{
-	if (this != &other)
-	{
-		this->client_fd = other.client_fd;
-		this->server_config = other.server_config;
-		this->keep_alive = other.keep_alive;
-		this->last_activity = other.last_activity;
-		this->timeout = other.timeout;
-		this->buffer = other.buffer;
-	}
-	return *this;
-};
+// Connection &Connection::operator=(const Connection &other)
+// {
+// 	if (this != &other)
+// 	{
+// 		this->client_fd = other.client_fd;
+// 		this->server_config = other.server_config;
+// 		this->keep_alive = other.keep_alive;
+// 		this->last_activity = other.last_activity;
+// 		this->timeout = other.timeout;
+// 		this->buffer = other.buffer;
+// 	}
+// 	return *this;
+// };
 
 Connection::~Connection()
 {
@@ -49,7 +49,6 @@ void Connection::handleRequest()
 
 	if (!this->isRequestComplete())
 		return;
-
 	try
 	{
 		HttpRequest request(this->buffer);
@@ -57,6 +56,7 @@ void Connection::handleRequest()
 		HttpResponse response(request, this->server_config);
 		response.sendResponse(client_fd);
 		this->buffer.clear();
+		this->closeConnection();
 	}
 	catch (const std::exception &e)
 	{
@@ -69,8 +69,8 @@ void Connection::handleRequest()
 
 void Connection::parseBuffer(char *buf, int bytes_read)
 {
-	std::string buffer(buf, bytes_read);
-	std::string header = buffer.substr(0, buffer.find("\r\n\r\n"));
+	std::string new_buffer(buf, bytes_read);
+	std::string header = new_buffer.substr(0, new_buffer.find("\r\n\r\n"));
 	if (header.empty())
 		return;
 	if (header.find("Transfer-Encoding: chunked") != std::string::npos)
@@ -78,16 +78,17 @@ void Connection::parseBuffer(char *buf, int bytes_read)
 
 	if (!this->data_chunked)
 	{
-		this->buffer += buffer;
+		this->buffer.append(new_buffer);
+		new_buffer.clear();
 		return;
 	}
 
-	std::string body = buffer.substr(buffer.find("\r\n\r\n") + 4);
+	std::string body = new_buffer.substr(new_buffer.find("\r\n\r\n") + 4);
 	if (this->buffer.empty() && body.empty())
 	{
 
 		this->data_chunked = false;
-		this->buffer += buffer;
+		this->buffer += new_buffer;
 		return;
 	}
 	else if (this->buffer.empty() && !body.empty())
@@ -134,7 +135,7 @@ bool Connection::isClosed()
 void Connection::manageClientActivity()
 {
 	this->last_activity = time(0);
-	std::string header = this->buffer.substr(0, buffer.find("\r\n\r\n"));
+	std::string header = this->buffer.substr(0, this->buffer.find("\r\n\r\n"));
 	if (header.empty())
 		return;
 	if (header.find("Connection: keep-alive") != std::string::npos)

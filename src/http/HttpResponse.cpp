@@ -305,6 +305,4 @@ void HttpResponse::sendResponse(int client_fd)
 	// Logger::log(Logger::DEBUG, "Response: " + response);
 
 	send(client_fd, response.c_str(), response.length(), 0);
-	if (this->keep_alive != "keep-alive")
-		close(client_fd);
 }

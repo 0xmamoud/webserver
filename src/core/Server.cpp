@@ -74,7 +74,7 @@ void Server::run()
 	struct epoll_event events[10];
 	while (!SignalHandler::is_interrupted)
 	{
-		int nfds = epoll.wait(events, 10, -1);
+		int nfds = epoll.wait(events, 10, 1000);
 		if (nfds < 0)
 		{
 			if (errno == EINTR)

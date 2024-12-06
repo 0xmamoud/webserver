@@ -36,7 +36,7 @@ private:
 
 public:
 	Connection(int fd, ServerConfig &server_config);
-	Connection &operator=(const Connection &other);
+	// Connection &operator=(const Connection &other);
 	~Connection();
 
 	void handleRequest();
