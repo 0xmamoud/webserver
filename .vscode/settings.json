@@ -49,6 +49,8 @@
         "fstream": "cpp",
         "sstream": "cpp",
         "ctime": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "cstring": "cpp",
+        "cinttypes": "cpp"
     }
 }

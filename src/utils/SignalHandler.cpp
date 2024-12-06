@@ -10,3 +10,9 @@ void SignalHandler::handleStop(int signal)
 		is_interrupted = true;
 	}
 }
+
+void SignalHandler::timeoutHandler(int signal)
+{
+	if (signal == SIGALRM)
+		throw std::runtime_error("Timeout signal received cutting process...");
+}

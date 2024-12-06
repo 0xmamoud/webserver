@@ -29,8 +29,8 @@ private:
 	std::string content_length;
 	std::string body;
 	std::string path;
-
 	std::string getErrorPage(int error_code);
+	bool is_cgi_timeouted;
 
 	void handleGET();
 	void handlePOST();

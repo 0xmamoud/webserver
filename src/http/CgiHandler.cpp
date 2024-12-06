@@ -6,6 +6,12 @@ CgiHandler::~CgiHandler() {}
 
 std::string CgiHandler::execute()
 {
+	struct sigaction sa;
+	sa.sa_handler = SignalHandler::timeoutHandler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGALRM, &sa, NULL);
+
 	if (pipe(this->pipe_in) == -1 || pipe(this->pipe_out) == -1)
 		throw std::runtime_error("Failed to create pipe");
 
@@ -15,6 +21,7 @@ std::string CgiHandler::execute()
 
 	if (this->pid == 0)
 	{
+		alarm(10);
 		this->setupChildDup();
 		this->setupEnv();
 
@@ -42,6 +49,12 @@ std::string CgiHandler::execute()
 
 	int status;
 	waitpid(this->pid, &status, 0);
+
+	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGALRM)
+	{
+		throw std::runtime_error("CGI script timed out after 10 seconds");
+	}
+
 	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
 		throw std::runtime_error("CGI script exited with non-zero status");
 

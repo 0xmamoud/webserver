@@ -1,6 +1,6 @@
 #include "../../include/HttpResponse.hpp"
 
-HttpResponse::HttpResponse(const HttpRequest &request, const ServerConfig &server_config) : request(request), server_config(server_config)
+HttpResponse::HttpResponse(const HttpRequest &request, const ServerConfig &server_config) : request(request), server_config(server_config), is_cgi_timeouted(false)
 {
 
 	this->generateResponse();
@@ -54,20 +54,28 @@ bool HttpResponse::isCGI()
 
 void HttpResponse::handleCGI()
 {
-	std::ostringstream oss;
-	if (!this->getFullPath("CGI"))
-		return;
+	try
+	{
+		std::ostringstream oss;
+		if (!this->getFullPath("CGI"))
+			return;
 
-	CgiHandler cgi_handler;
-	cgi_handler.setMethod(this->request.getMethod());
-	cgi_handler.setBody(this->request.getBody());
-	cgi_handler.setContentType(this->request.getContentType());
-	oss << this->request.getContentLength();
-	cgi_handler.setContentLength(oss.str());
-	cgi_handler.setQueryString(this->request.getQueryString());
-	cgi_handler.setScriptName(this->path);
+		CgiHandler cgi_handler;
+		cgi_handler.setMethod(this->request.getMethod());
+		cgi_handler.setBody(this->request.getBody());
+		cgi_handler.setContentType(this->request.getContentType());
+		oss << this->request.getContentLength();
+		cgi_handler.setContentLength(oss.str());
+		cgi_handler.setQueryString(this->request.getQueryString());
+		cgi_handler.setScriptName(this->path);
 
-	this->body = cgi_handler.execute();
+		this->body = cgi_handler.execute();
+	}
+	catch (const std::exception &e)
+	{
+		this->is_cgi_timeouted = true;
+		throw std::runtime_error(e.what());
+	}
 }
 
 void HttpResponse::handleGET()
@@ -287,7 +295,7 @@ std::string HttpResponse::getErrorPage(int error_code)
 
 void HttpResponse::sendResponse(int client_fd)
 {
-	if (this->isCGI())
+	if (this->isCGI() && !this->is_cgi_timeouted)
 	{
 		send(client_fd, this->body.c_str(), this->body.length(), 0);
 		if (this->keep_alive != "keep-alive")
@@ -301,8 +309,6 @@ void HttpResponse::sendResponse(int client_fd)
 	response += "Content-Length: " + this->content_length + "\r\n";
 	response += "Connection: " + this->keep_alive + "\r\n\r\n";
 	response += this->body;
-
-	// Logger::log(Logger::DEBUG, "Response: " + response);
 
 	send(client_fd, response.c_str(), response.length(), 0);
 }
