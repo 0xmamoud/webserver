@@ -6,11 +6,7 @@ CgiHandler::~CgiHandler() {}
 
 std::string CgiHandler::execute()
 {
-	struct sigaction sa;
-	sa.sa_handler = SignalHandler::timeoutHandler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	sigaction(SIGALRM, &sa, NULL);
+	this->setupSignalTimeout();
 
 	if (pipe(this->pipe_in) == -1 || pipe(this->pipe_out) == -1)
 		throw std::runtime_error("Failed to create pipe");
@@ -59,6 +55,15 @@ std::string CgiHandler::execute()
 		throw std::runtime_error("CGI script exited with non-zero status");
 
 	return response;
+}
+
+void CgiHandler::setupSignalTimeout()
+{
+	struct sigaction sa;
+	sa.sa_handler = SignalHandler::timeoutHandler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGALRM, &sa, NULL);
 }
 
 void CgiHandler::setupChildDup()

@@ -27,6 +27,7 @@ private:
 
 	void setupChildDup();
 	void setupEnv();
+	void setupSignalTimeout();
 
 public:
 	CgiHandler();
