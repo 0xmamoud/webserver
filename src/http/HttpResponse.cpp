@@ -21,6 +21,13 @@ void HttpResponse::generateResponse()
 			return;
 		}
 
+		if (this->request.getContentLength() > this->server_config.body_size)
+		{
+			this->body = this->getErrorPage(413);
+			this->generateHeader("413", "Payload Too Large", "text/html");
+			return;
+		}
+
 		if (this->isCGI())
 			return this->handleCGI();
 		if (method == "GET")

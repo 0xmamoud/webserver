@@ -49,6 +49,7 @@ void Connection::handleRequest()
 
 	if (!this->isRequestComplete())
 		return;
+
 	try
 	{
 		HttpRequest request(this->buffer);
