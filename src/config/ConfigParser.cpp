@@ -154,6 +154,8 @@ void ConfigParser::normalizeServerConfig(Config &config)
 			throw std::runtime_error("Port number is required");
 		if (it->body_size == 0)
 			it->body_size = 1000000;
+		if (it->error_pages.find(400) == it->error_pages.end())
+			it->error_pages[400] = "error_pages/400.html";
 		if (it->error_pages.find(403) == it->error_pages.end())
 			it->error_pages[403] = "error_pages/403.html";
 		if (it->error_pages.find(404) == it->error_pages.end())
