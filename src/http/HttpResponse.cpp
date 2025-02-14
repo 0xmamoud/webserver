@@ -28,6 +28,14 @@ void HttpResponse::generateResponse()
 			return;
 		}
 
+		const std::string server_name = this->server_config.server_name;
+		if (!server_name.empty() && server_name != this->request.getHost())
+		{
+			this->body = this->getErrorPage(400);
+			this->generateHeader("400", "Bad Request", "text/html");
+			return;
+		}
+
 		if (this->isCGI())
 			return this->handleCGI();
 		if (method == "GET")

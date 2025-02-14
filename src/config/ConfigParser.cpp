@@ -146,8 +146,6 @@ void ConfigParser::normalizeServerConfig(Config &config)
 {
 	for (std::vector<ServerConfig>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
 	{
-		if (it->server_name.empty())
-			it->server_name = "localhost:4000";
 		if (it->host.empty())
 			it->host = "localhost";
 		if (it->port == 0)
