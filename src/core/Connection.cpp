@@ -74,19 +74,17 @@ void Connection::handleRequest()
 std::string Connection::readRequestData()
 {
 	const int CHUNK_SIZE = 4096;
-	char buf[CHUNK_SIZE];
-	std::string data;
+	std::vector<char> buffer;
+	char chunk[CHUNK_SIZE];
 	int bytes_read = 0;
-	memset(buf, 0, CHUNK_SIZE);
 
-	while ((bytes_read = recv(client_fd, buf, CHUNK_SIZE, 0)) > 0)
+	while ((bytes_read = recv(client_fd, chunk, CHUNK_SIZE, 0)) > 0)
 	{
-		data.append(buf, bytes_read);
+		buffer.insert(buffer.end(), chunk, chunk + bytes_read);
 		if (bytes_read < CHUNK_SIZE)
 			break;
-		memset(buf, 0, CHUNK_SIZE);
 	}
-	return data;
+	return std::string(buffer.begin(), buffer.end());
 }
 
 void Connection::parseBuffer(std::string &buf)
