@@ -73,7 +73,7 @@ void Connection::handleRequest()
 
 std::string Connection::readRequestData()
 {
-	const int CHUNK_SIZE = 4096;
+	const int CHUNK_SIZE = 1;
 	std::vector<char> buffer;
 	char chunk[CHUNK_SIZE];
 	int bytes_read = 0;
