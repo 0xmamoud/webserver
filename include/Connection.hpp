@@ -30,9 +30,11 @@ private:
 	bool isRequestComplete();
 	void closeConnection();
 	void manageClientActivity();
-	void parseBuffer(char *buf, int bytes_read);
+	void parseBuffer(std::string &buf);
 	void setBufferChunks(const std::string &body);
 	ServerConfig getServerConfig(HttpRequest &request);
+
+	std::string readRequestData();
 
 public:
 	Connection(int fd, ServerConfig &server_config);

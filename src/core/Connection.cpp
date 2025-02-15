@@ -26,26 +26,28 @@ Connection::~Connection()
 
 void Connection::handleRequest()
 {
-	char buf[server_config.body_size];
-	memset(buf, 0, server_config.body_size);
-	int bytes_read = recv(client_fd, buf, server_config.body_size, 0);
+	// char buf[server_config.body_size];
+	// memset(buf, 0, server_config.body_size);
+	// int bytes_read = recv(client_fd, buf, server_config.body_size, 0);
 
-	Logger::log(Logger::DEBUG, "Received request from client");
-	if (bytes_read < 0)
-	{
-		perror("recv");
-		Logger::log(Logger::ERROR, "Failed to read from socket");
-		return;
-	}
-	else if (bytes_read == 0)
-	{
-		Logger::log(Logger::INFO, "Connection closed by client");
-		close(this->client_fd);
-		this->client_fd = -1;
-		return;
-	}
+	// Logger::log(Logger::DEBUG, "Received request from client");
+	// if (bytes_read < 0)
+	// {
+	// 	perror("recv");
+	// 	Logger::log(Logger::ERROR, "Failed to read from socket");
+	// 	return;
+	// }
+	// else if (bytes_read == 0)
+	// {
+	// 	Logger::log(Logger::INFO, "Connection closed by client");
+	// 	close(this->client_fd);
+	// 	this->client_fd = -1;
+	// 	return;
+	// }
 
-	this->parseBuffer(buf, bytes_read);
+	std::string buf = this->readRequestData();
+
+	this->parseBuffer(buf);
 	this->manageClientActivity();
 
 	if (!this->isRequestComplete())
@@ -69,10 +71,27 @@ void Connection::handleRequest()
 	}
 };
 
-void Connection::parseBuffer(char *buf, int bytes_read)
+std::string Connection::readRequestData()
 {
-	std::string new_buffer(buf, bytes_read);
-	std::string header = new_buffer.substr(0, new_buffer.find("\r\n\r\n"));
+	const int CHUNK_SIZE = 4096;
+	char buf[CHUNK_SIZE];
+	std::string data;
+	int bytes_read = 0;
+	memset(buf, 0, CHUNK_SIZE);
+
+	while ((bytes_read = recv(client_fd, buf, CHUNK_SIZE, 0)) > 0)
+	{
+		data.append(buf, bytes_read);
+		if (bytes_read < CHUNK_SIZE)
+			break;
+		memset(buf, 0, CHUNK_SIZE);
+	}
+	return data;
+}
+
+void Connection::parseBuffer(std::string &buf)
+{
+	std::string header = buf.substr(0, buf.find("\r\n\r\n"));
 	if (header.empty())
 		return;
 	if (header.find("Transfer-Encoding: chunked") != std::string::npos)
@@ -80,17 +99,17 @@ void Connection::parseBuffer(char *buf, int bytes_read)
 
 	if (!this->data_chunked)
 	{
-		this->buffer.append(new_buffer);
-		new_buffer.clear();
+		this->buffer.append(buf);
+		buf.clear();
 		return;
 	}
 
-	std::string body = new_buffer.substr(new_buffer.find("\r\n\r\n") + 4);
+	std::string body = buf.substr(buf.find("\r\n\r\n") + 4);
 	if (this->buffer.empty() && body.empty())
 	{
 
 		this->data_chunked = false;
-		this->buffer += new_buffer;
+		this->buffer += buf;
 		return;
 	}
 	else if (this->buffer.empty() && !body.empty())
