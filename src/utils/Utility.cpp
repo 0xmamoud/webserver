@@ -48,3 +48,37 @@ std::string getDate()
 
 	return std::string(buf);
 }
+
+size_t convertToOctets(const std::string &str)
+{
+	std::string numberPart;
+	std::string unitPart;
+	size_t i = 0;
+
+	while (i < str.size() && std::isdigit(str[i]))
+	{
+		numberPart += str[i];
+		i++;
+	}
+	size_t value = std::atoi(numberPart.c_str());
+
+	unitPart = str.substr(i);
+	std::transform(unitPart.begin(), unitPart.end(), unitPart.begin(), ::tolower);
+	if (unitPart == "kb")
+	{
+		value *= 1024;
+	}
+	else if (unitPart == "mb")
+	{
+		value *= 1024 * 1024;
+	}
+
+	return value;
+}
+
+std::string toString(int number)
+{
+	std::ostringstream oss;
+	oss << number;
+	return oss.str();
+}

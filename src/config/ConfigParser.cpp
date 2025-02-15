@@ -1,4 +1,5 @@
 #include "../../include/ConfigParser.hpp"
+#include "../../include/Utility.hpp"
 
 ConfigParser::ConfigParser() : filepath(""), inside_location_block(false), inside_server_block(false) {}
 
@@ -134,7 +135,7 @@ void ConfigParser::handleServerConfig(ServerConfig &current_server, const std::s
 	else if (line.find("root") != std::string::npos)
 		current_server.root = this->getValue(line);
 	else if (line.find("body_size") != std::string::npos)
-		current_server.body_size = std::atoi(this->getValue(line).c_str());
+		current_server.body_size = convertToOctets(this->getValue(line));
 	else if (line.find("error_page") != std::string::npos)
 	{
 		std::vector<std::string> tokens = this->split(line, ' ');
@@ -147,11 +148,13 @@ void ConfigParser::normalizeServerConfig(Config &config)
 	for (std::vector<ServerConfig>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
 	{
 		if (it->host.empty())
-			it->host = "localhost";
+			throw std::runtime_error("Host is required");
 		if (it->port == 0)
 			throw std::runtime_error("Port number is required");
+		if (it->server_name.empty())
+			it->server_name = it->host + ":" + toString(it->port);
 		if (it->body_size == 0)
-			it->body_size = 1000000;
+			it->body_size = convertToOctets("50MB");
 		if (it->error_pages.find(400) == it->error_pages.end())
 			it->error_pages[400] = "error_pages/400.html";
 		if (it->error_pages.find(403) == it->error_pages.end())

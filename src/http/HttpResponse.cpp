@@ -28,8 +28,7 @@ void HttpResponse::generateResponse()
 			return;
 		}
 
-		const std::string server_name = this->server_config.server_name;
-		if (!server_name.empty() && server_name != this->request.getHost())
+		if (this->server_config.server_name != this->request.getHost())
 		{
 			this->body = this->getErrorPage(400);
 			this->generateHeader("400", "Bad Request", "text/html");

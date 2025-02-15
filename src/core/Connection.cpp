@@ -30,6 +30,7 @@ void Connection::handleRequest()
 	memset(buf, 0, server_config.body_size);
 	int bytes_read = recv(client_fd, buf, server_config.body_size, 0);
 
+	Logger::log(Logger::DEBUG, "Received request from client");
 	if (bytes_read < 0)
 	{
 		perror("recv");
