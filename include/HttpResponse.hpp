@@ -45,6 +45,7 @@ private:
 	bool parsePath();
 	bool pathAutorization(const std::string &path);
 	bool getFullPath(const std::string &method);
+	bool isSameServerName();
 
 public:
 	HttpResponse(const HttpRequest &request, const ServerConfig &server_config);

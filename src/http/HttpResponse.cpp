@@ -8,6 +8,29 @@ HttpResponse::HttpResponse(const HttpRequest &request, const ServerConfig &serve
 
 HttpResponse::~HttpResponse() {};
 
+bool HttpResponse::isSameServerName()
+{
+	std::vector<std::string> hostname = split(this->request.getHost(), ":");
+	std::vector<std::string> servername = split(this->server_config.server_name, ":");
+
+	if (hostname.size() < 2 || servername.size() < 2)
+	{
+		if (this->server_config.server_name != this->request.getHost())
+			return false;
+		return true;
+	}
+	if (hostname[1] != servername[1])
+		return false;
+	if (hostname[0] == servername[0])
+		return true;
+	if (hostname[0] == "localhost" && servername[0] == "127.0.0.1")
+		return true;
+	if (hostname[0] == "127.0.0.1" && servername[0] == "localhost")
+		return true;
+
+	return false;
+}
+
 void HttpResponse::generateResponse()
 {
 	try
@@ -28,7 +51,7 @@ void HttpResponse::generateResponse()
 			return;
 		}
 
-		if (this->server_config.server_name != this->request.getHost())
+		if (!this->isSameServerName())
 		{
 			this->body = this->getErrorPage(400);
 			this->generateHeader("400", "Bad Request", "text/html");
