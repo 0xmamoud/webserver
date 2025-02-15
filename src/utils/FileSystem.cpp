@@ -1,4 +1,6 @@
 #include "../../include/FileSystem.hpp"
+#include "../../include/Utility.hpp"
+#include "../../include/Logger.hpp"
 
 const std::map<std::string, std::string> FileSystem::content_types = FileSystem::initializeContentTypes();
 
@@ -118,10 +120,24 @@ std::string FileSystem::getFileContent(const std::string &path)
 void FileSystem::createFile(const std::string &path, const std::string &content)
 {
 	bool binary = isBinaryFile(path.substr(path.find_last_of(".")));
+	Logger::log(Logger::DEBUG, "Creating file: " + path);
+	Logger::log(Logger::DEBUG, "isBinary: " + toString(binary));
+
 	std::ofstream file(path.c_str(), binary ? std::ios::binary : std::ios::out);
 	if (!file.is_open())
 		throw std::runtime_error("Failed to create file: " + path);
-	file << content;
+
+	if (binary)
+	{
+		// Write raw data (bytes)
+		file.write(content.data(), content.size());
+	}
+	else
+	{
+		// Write as text
+		file << content;
+	}
+
 	file.close();
 }
 

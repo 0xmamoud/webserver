@@ -144,6 +144,8 @@ void HttpResponse::handlePOST()
 	if (!this->getFullPath("POST"))
 		return;
 
+	Logger::log(Logger::DEBUG, "POST path: " + this->path);
+
 	std::string content_type = this->request.getContentType();
 	std::string file_extension = content_type.substr(content_type.find_last_of("/") + 1);
 	std::string file_name = FileSystem::getRandomeFileName() + "." + file_extension;
