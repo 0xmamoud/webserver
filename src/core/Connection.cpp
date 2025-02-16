@@ -2,20 +2,6 @@
 
 Connection::Connection(int fd, ServerConfig &server_config) : client_fd(fd), server_config(server_config), keep_alive(false), data_chunked(false), last_activity(time(0)), timeout(5) {};
 
-// Connection &Connection::operator=(const Connection &other)
-// {
-// 	if (this != &other)
-// 	{
-// 		this->client_fd = other.client_fd;
-// 		this->server_config = other.server_config;
-// 		this->keep_alive = other.keep_alive;
-// 		this->last_activity = other.last_activity;
-// 		this->timeout = other.timeout;
-// 		this->buffer = other.buffer;
-// 	}
-// 	return *this;
-// };
-
 Connection::~Connection()
 {
 	if (client_fd > 0)
@@ -26,24 +12,6 @@ Connection::~Connection()
 
 void Connection::handleRequest()
 {
-	// char buf[server_config.body_size];
-	// memset(buf, 0, server_config.body_size);
-	// int bytes_read = recv(client_fd, buf, server_config.body_size, 0);
-
-	// Logger::log(Logger::DEBUG, "Received request from client");
-	// if (bytes_read < 0)
-	// {
-	// 	perror("recv");
-	// 	Logger::log(Logger::ERROR, "Failed to read from socket");
-	// 	return;
-	// }
-	// else if (bytes_read == 0)
-	// {
-	// 	Logger::log(Logger::INFO, "Connection closed by client");
-	// 	close(this->client_fd);
-	// 	this->client_fd = -1;
-	// 	return;
-	// }
 
 	std::string buf = this->readRequestData();
 
@@ -56,8 +24,8 @@ void Connection::handleRequest()
 	try
 	{
 		HttpRequest request(this->buffer);
-		ServerConfig server_config = this->getServerConfig(request);
-		HttpResponse response(request, this->server_config);
+		ServerConfig new_server_config = this->getServerConfig(request);
+		HttpResponse response(request, new_server_config);
 		response.sendResponse(client_fd);
 		this->buffer.clear();
 		this->closeConnection();
@@ -181,6 +149,9 @@ ServerConfig Connection::getServerConfig(HttpRequest &request)
 	size_t slash_pos = it->second.redirect.find('/');
 	std::string new_uri = (slash_pos != std::string::npos) ? it->second.redirect.substr(slash_pos) : "/";
 	request.setUri(new_uri);
+	request.setHost(it->second.servers[it->second.redirect].server_name);
+	ServerConfig new_server_config = it->second.servers[it->second.redirect];
+
 	return it->second.servers[it->second.redirect];
 };
 

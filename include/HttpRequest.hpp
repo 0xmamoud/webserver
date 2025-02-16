@@ -42,6 +42,7 @@ public:
 	int getContentLength() const;
 
 	void setUri(const std::string &uri);
+	void setHost(const std::string &host);
 };
 
 #endif

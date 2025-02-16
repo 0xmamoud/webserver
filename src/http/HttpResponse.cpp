@@ -46,6 +46,9 @@ void HttpResponse::generateResponse()
 
 		if (this->request.getContentLength() > this->server_config.body_size)
 		{
+			// std::cout << "serrver name : " << this->server_config.server_name << std::endl;
+			// std::cout << "Content-Length: " << this->request.getContentLength() << std::endl;
+			// std::cout << "Body Size: " << this->server_config.body_size << std::endl;
 			this->body = this->getErrorPage(413);
 			this->generateHeader("413", "Payload Too Large", "text/html");
 			return;

@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 		signal(SIGINT, SignalHandler::handleStop);
 		ConfigParser parser(argv[1]);
 		Config config = parser.parseConfig();
-		// print everything in my config
+
 		// for (std::vector<ServerConfig>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
 		// {
 		// 	std::cout << "Server Name: " << it->server_name << std::endl;

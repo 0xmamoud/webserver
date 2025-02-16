@@ -48,8 +48,7 @@ void handlePostRequest()
 
 int main()
 {
-	while (1)
-		;
+
 	const char *requestMethod = getenv("REQUEST_METHOD");
 	std::cout << "HTTP/1.1 200 OK\r\n";
 	if (requestMethod == nullptr)

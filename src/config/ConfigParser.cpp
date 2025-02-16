@@ -154,7 +154,7 @@ void ConfigParser::normalizeServerConfig(Config &config)
 		if (it->server_name.empty())
 			it->server_name = it->host + ":" + toString(it->port);
 		if (it->body_size == 0)
-			it->body_size = convertToOctets("50MB");
+			it->body_size = convertToOctets("10MB");
 		if (it->error_pages.find(400) == it->error_pages.end())
 			it->error_pages[400] = "error_pages/400.html";
 		if (it->error_pages.find(403) == it->error_pages.end())
@@ -209,6 +209,26 @@ void ConfigParser::handleRedirection(Config &config)
 				std::string server_name = it2->second.redirect.substr(0, it2->second.redirect.find('/'));
 				ServerConfig redirection = this->findServerConfig(server_name, config);
 				it2->second.servers[it2->second.redirect] = redirection;
+				if (it2->second.servers[it2->second.redirect].host.empty())
+					throw std::runtime_error("Host is required for redirection");
+				if (it2->second.servers[it2->second.redirect].port == 0)
+					throw std::runtime_error("Port number is required for redirection");
+				if (it2->second.servers[it2->second.redirect].server_name.empty())
+					it2->second.servers[it2->second.redirect].server_name = it2->second.servers[it2->second.redirect].host + ":" + toString(it2->second.servers[it2->second.redirect].port);
+				if (it2->second.servers[it2->second.redirect].body_size == 0)
+					it2->second.servers[it2->second.redirect].body_size = convertToOctets("10MB");
+				if (it2->second.servers[it2->second.redirect].error_pages.find(400) == it2->second.servers[it2->second.redirect].error_pages.end())
+					it2->second.servers[it2->second.redirect].error_pages[400] = "error_pages/400.html";
+				if (it2->second.servers[it2->second.redirect].error_pages.find(403) == it2->second.servers[it2->second.redirect].error_pages.end())
+					it2->second.servers[it2->second.redirect].error_pages[403] = "error_pages/403.html";
+				if (it2->second.servers[it2->second.redirect].error_pages.find(404) == it2->second.servers[it2->second.redirect].error_pages.end())
+					it2->second.servers[it2->second.redirect].error_pages[404] = "error_pages/404.html";
+				if (it2->second.servers[it2->second.redirect].error_pages.find(405) == it2->second.servers[it2->second.redirect].error_pages.end())
+					it2->second.servers[it2->second.redirect].error_pages[405] = "error_pages/405.html";
+				if (it2->second.servers[it2->second.redirect].error_pages.find(413) == it2->second.servers[it2->second.redirect].error_pages.end())
+					it2->second.servers[it2->second.redirect].error_pages[413] = "error_pages/413.html";
+				if (it2->second.servers[it2->second.redirect].error_pages.find(500) == it2->second.servers[it2->second.redirect].error_pages.end())
+					it2->second.servers[it2->second.redirect].error_pages[500] = "error_pages/500.html";
 			}
 		}
 	};

@@ -162,12 +162,20 @@ std::string HttpRequest::getConnection() const
 	return this->Connection;
 }
 
+int HttpRequest::getContentLength() const
+{
+	return this->content_length;
+}
+
+// --------------------
+// Setters Functions
+// --------------------
 void HttpRequest::setUri(const std::string &uri)
 {
 	this->uri = uri;
 }
 
-int HttpRequest::getContentLength() const
+void HttpRequest::setHost(const std::string &host)
 {
-	return this->content_length;
+	this->host = host;
 }
